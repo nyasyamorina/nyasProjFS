@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <LangVersion>13.0</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <OutputType>Exe</OutputType>
+    <BaseOutputPath>..\BuildOutput</BaseOutputPath>
+	  <UseCommonOutputDirectory>true</UseCommonOutputDirectory>
+    <SelfContained>True</SelfContained>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommandLineParser" Version="2.9.1" />
+    <PackageReference Include="System.Management" Version="9.0.0" />
+    <ProjectReference Include="..\nyasProjFS\nyasProjFS.csproj" />
+    <ProjectReference Include="..\ProjFSFeatureController\ProjFSFeatureController.csproj" />
+  </ItemGroup>
+
+</Project>
