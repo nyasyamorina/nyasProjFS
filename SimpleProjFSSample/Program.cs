@@ -62,6 +62,12 @@ public static partial class Program
             return false;
         }
 
+        // using ProjFSFeatureController.exe to enable feature should be a optional Functionality
+        if (!File.Exists(ProjFSFeatureController.ExePath)) {
+            Logger.Info("could not find ProjFSFeatureController.exe");
+            goto ReturnFalse;
+        }
+
         Console.WriteLine("The ProjFS feature is not enabled, Do you want to enable ProjFS now? (administrator required) [y/n, default:n]");
         line = Console.ReadLine();
         Logger.Debug($"user input: {line}");
@@ -78,10 +84,6 @@ public static partial class Program
                     Console.WriteLine("Failed to enable the ProjFS feature.");
                     goto ReturnFalse;
                 }
-            }
-            catch (FileNotFoundException ex) {
-                Logger.Error($" -- could not find file at \"{ex.FileName}\"");
-                goto ReturnFalse;
             }
             catch (NotSupportedException ex) {
                 Logger.Error(" -- " + ex.Message);
@@ -104,7 +106,8 @@ public static partial class Program
     {
         try {
             nyasProjFS.ApiHelper.Initialize();
-            Logger.Info("the PtojFS API has been successfully initialized");
+            Logger.Info("the ProjFS API has been successfully initialized");
+            Logger.Debug($"the ProjFS API has windows build number {nyasProjFS.ApiHelper.ApiLevel}");
             return true;
         }
         catch (FileNotFoundException ex) {

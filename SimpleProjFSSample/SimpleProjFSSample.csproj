@@ -7,7 +7,7 @@
     <Nullable>enable</Nullable>
     <OutputType>Exe</OutputType>
     <BaseOutputPath>..\BuildOutput</BaseOutputPath>
-	  <UseCommonOutputDirectory>true</UseCommonOutputDirectory>
+	  <!-- <UseCommonOutputDirectory>true</UseCommonOutputDirectory> --> <!-- dependencies will not be compiled when this option is enabled -->
     <SelfContained>True</SelfContained>
   </PropertyGroup>
 
@@ -15,7 +15,6 @@
     <PackageReference Include="CommandLineParser" Version="2.9.1" />
     <PackageReference Include="System.Management" Version="9.0.0" />
     <ProjectReference Include="..\nyasProjFS\nyasProjFS.csproj" />
-    <ProjectReference Include="..\ProjFSFeatureController\ProjFSFeatureController.csproj" />
   </ItemGroup>
 
 </Project>
