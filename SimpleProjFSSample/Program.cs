@@ -110,13 +110,15 @@ public static partial class Program
             Logger.Debug($"the ProjFS API has windows build number {nyasProjFS.ApiHelper.ApiLevel}");
             return true;
         }
-        catch (FileNotFoundException ex) {
-            Logger.Error($" -- could not find file at \"{ex.FileName}\"");
-            return false;
+        catch (DllNotFoundException ex) {
+            Logger.Error($" -- could not find dll: \n{ex.Message}");
         }
-        catch (FileLoadException ex) {
-            Logger.Error($" -- could not load dll at \"{ex.FileName}\"");
-            return false;
+        catch (BadImageFormatException ex) {
+            Logger.Error($" -- could not load dll: \n{ex.Message}");
         }
+        catch (EntryPointNotFoundException ex) {
+            Logger.Error($" -- could not find entry point: \n{ex.Message}");
+        }
+        return false;
     }
 }
