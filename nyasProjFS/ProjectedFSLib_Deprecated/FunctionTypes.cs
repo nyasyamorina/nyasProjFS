@@ -74,8 +74,8 @@ public static class FunctionTypes
         [MarshalAs(UnmanagedType.LPTStr)] string destinationFileName,
         ref PrjPlaceholderInformation placeholderInformation,
         uint length,
-        uint updateFlags,
-        out uint failureReason
+        UpdateType updateFlags,
+        out UpdateFailureCause failureReason
     );
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]

@@ -111,11 +111,11 @@ public static class FunctionTypes
     #region Callback support
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)] // Common
-    public delegate HResult PrjCompleteCommand(
+    public unsafe delegate HResult PrjCompleteCommand(
         PrjNamespaceVirtualizationContext namespaceVirtualizationContext,
         int commandId,
         HResult completionResult,
-        ref PrjCompleteCommandExtendedParameters extendedParameters
+        PrjCompleteCommandExtendedParameters* extendedParameters // null or ref
     );
 
     #endregion // Callback support

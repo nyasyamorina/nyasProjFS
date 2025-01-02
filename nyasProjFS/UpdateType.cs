@@ -1,5 +1,17 @@
 namespace nyasProjFS;
 
+/// <summary>Defines values describing when to allow a virtualized file to be deleted or updated.</summary>
+/// <remarks>
+/// <para>
+/// These values are used in the <paramref name="updateFlags"/> input parameter of
+/// <c>ProjFS.VirtualizationInstance.UpdateFileIfNeeded</c> and <c>ProjFS.VirtualizationInstance.DeleteFile</c>.
+/// The flags control whether ProjFS should allow the update given the state of the file or directory on disk.
+/// </para>
+/// <para>
+/// See the documentation for <c>ProjFS.OnDiskFileState</c> for a description of possible file
+/// and directory states in ProjFS.
+/// </para>
+/// </remarks>
 [Flags]
 public enum UpdateType : uint {
     None               = 0x00000000,

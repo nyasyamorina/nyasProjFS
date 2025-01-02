@@ -1,5 +1,85 @@
 namespace nyasProjFS;
 
+/// <summary>
+/// HRESULT values that ProjFS may report to a provider, or that a provider may return to ProjFS.
+/// </summary>
+/// <remarks>
+/// <para>
+/// .NET methods normally do not return error codes, preferring to throw exceptions.  For the most
+/// part this API does not throw exceptions, preferring instead to return error codes.  We do this
+/// for few reasons:
+/// <list type="bullet">
+///     <item>
+///     <description>
+///     This API is a relatively thin wrapper around a native API that itself returns HRESULT codes.
+///     This managed library would have to translate those error codes into exceptions to throw.
+///     </description>
+///     </item>
+///     <item>
+///     <description>
+///     Errors that a provider returns are sent through the file system, back to the user who is
+///     performing the I/O.  If the provider callbacks threw exceptions, the managed library would
+///     just have to catch them and turn them into HRESULT codes.
+///     </description>
+///     </item>
+///     <item>
+///     <description>
+///     If the API methods described here threw exceptions, either the provider would have to catch
+///     them and turn them into error codes to return from its callbacks, or it would allow those
+///     exceptions to propagate and this managed library would still have to deal with them as
+///     described in the preceding bullet.
+///     </description>
+///     </item>
+/// </list>
+/// So rather than deal with the overhead of exceptions just to try to conform to .NET conventions,
+/// this API largely dispenses with them and uses HRESULT codes.
+/// </para>
+/// <para>
+/// Note that for the convenience of C# developers the <c>VirtualizationInstance::CreateWriteBuffer</c>
+/// method does throw <c>System::OutOfMemoryException</c> if it cannot allocate the buffer.  This
+/// makes the method convenient to use with the <c>using</c> keyword.
+/// </para>
+/// <para>
+/// Note that when HRESULT codes returned from the provider are sent to the file system, the ProjFS
+/// library translates them into NTSTATUS codes.  Because there is not a 1-to-1 mapping of HRESULT
+/// codes to NTSTATUS codes, the set of HRESULT codes that a provider is allowed to return is
+/// necessarily constrained.
+/// </para>
+/// <para>
+/// A provider's <c>IRequiredCallbacks</c> method and <c>On...</c> delegate implementations may
+/// return any <c>HResult</c> value returned from a <c>VirtualizationInstance</c>, as well as the
+/// following <c>HResult</c> values:
+/// <list type="bullet">
+///     <item>
+///     <description><see cref="Ok"/></description>
+///     </item>
+///     <item>
+///     <description><see cref="Pending"/></description>
+///     </item>
+///     <item>
+///     <description><see cref="OutOfMemory"/></description>
+///     </item>
+///     <item>
+///     <description><see cref="InsufficientBuffer"/></description>
+///     </item>
+///     <item>
+///     <description><see cref="FileNotFound"/></description>
+///     </item>
+///     <item>
+///     <description><see cref="VirtualizationUnavaliable"/></description>
+///     </item>
+///     <item>
+///     <description><see cref="InternalError"/></description>
+///     </item>
+/// </list>
+/// </para>
+/// <para>
+/// The remaining values in the <c>HResult</c> enum may be returned to a provider from ProjFS APIs
+/// and are primarily intended to communicate information to the provider.  As noted above, if
+/// such a value is returned to a provider in its implementation of a callback or delegate, it may
+/// return the value to ProjFS.
+/// </para>
+/// </remarks>
 public enum HResult : int {
     /// <summary>success</summary>
     Ok = 0,
@@ -54,3 +134,9 @@ public enum HResult : int {
 // ERROR_PATH_NOT_FOUND                               = 0x0003
 // ERROR_REPARSE_POINT_ENCOUNTERED                    = 0x112B
 // ERROR_FILE_SYSTEM_VIRTUALIZATION_INVALID_OPERATION = 0x0181
+
+public static class HResultExtends
+{
+    public static bool IsFailed(this HResult result) => (int) result < 0;
+    public static bool IsSuccess(this HResult result) => (int) result >= 0;
+}

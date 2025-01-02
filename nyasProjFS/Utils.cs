@@ -24,7 +24,7 @@ public sealed class Utils
     /// <returns>
     /// <c>false</c> if <paramref name="fullPath"/> does not exist.
     /// </returns>
-    public static bool TryGetOnDiskFileState(string fullPath, out OnDiskFileState fileState) => ApiHelper.PrjGetOnDiskFileState(fullPath, out fileState) >= 0;
+    public static bool TryGetOnDiskFileState(string fullPath, out OnDiskFileState fileState) => ApiHelper.PrjGetOnDiskFileState(fullPath, out fileState).IsSuccess();
 
     /// <summary>
     /// Determines whether a file name string matches a pattern, potentially containing

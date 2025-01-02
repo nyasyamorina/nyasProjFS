@@ -2,8 +2,10 @@ using System.Runtime.InteropServices;
 
 namespace nyasProjFS.ProjectedFSLib;
 
-public struct PrjPlaceholderInfo
+public unsafe struct PrjPlaceholderInfo
 {
+    public static uint StructSize { get; } = (uint) Marshal.SizeOf<PrjPlaceholderInfo>();
+
     public struct EaInformationType
     {
         public uint EaBufferSize;
@@ -20,10 +22,10 @@ public struct PrjPlaceholderInfo
         public uint OffsetToFirstStreamInfo;
     }
 
+    public PrjFileBasicInfo FileBasicInfo;
     public EaInformationType EaInformation;
     public SecurityInformationType SecurityInformation;
     public StreamsInformationType StreamsInformation;
     public PrjPlaceholderVersionInfo VersionInfo;
-    [MarshalAs(UnmanagedType.ByValArray, SizeConst = 1)]
-    public byte[] VariableData;
+    public fixed byte VariableData[1];
 }

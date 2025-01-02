@@ -1,11 +1,7 @@
-using System.Runtime.InteropServices;
-
 namespace nyasProjFS.ProjectedFSLib;
 
-public struct PrjPlaceholderVersionInfo
+public unsafe struct PrjPlaceholderVersionInfo
 {
-    [MarshalAs(UnmanagedType.ByValArray, SizeConst = (int) PrjPlaceholderId.Length)]
-    public byte[] ProviderId;
-    [MarshalAs(UnmanagedType.ByValArray, SizeConst = (int) PrjPlaceholderId.Length)]
-    public byte[] ContentId;
+    public fixed byte ProviderId[PrjPlaceholderId.Length];
+    public fixed byte ContentId[PrjPlaceholderId.Length];
 }

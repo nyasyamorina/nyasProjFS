@@ -12,11 +12,11 @@ public struct PrjOperationParameters
         public uint CreateDisposition;
         public uint CreateOptions;
         public uint IoStatusInformation;
-        public uint NotificationMask;
+        public NotificationType NotificationMask;
     }
     public struct FileRenamedType
     {
-        public uint NotificationMask;
+        public NotificationType NotificationMask;
     }
     public struct FileDeletedOnHandleCloseType
     {

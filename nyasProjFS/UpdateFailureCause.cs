@@ -1,5 +1,15 @@
 namespace nyasProjFS;
 
+/// <summary>
+/// Defines values that describe why an attempt to update or delete a file in a virtualization
+/// root has failed.
+/// </summary>
+/// <remarks>
+/// These values are used in the <paramref name="failureReason"/> output parameter of
+/// <c>ProjFS.VirtualizationInstance.UpdateFileIfNeeded</c> and <c>ProjFS.VirtualizationInstance.DeleteFile</c>.
+/// These are set if the API returns <c>HResult.VirtualizationInvalidOp</c> because the file state
+/// does not allow the operation with the <paramref name="updateFlags"/> value(s) passed to the API.
+/// </remarks>
 [Flags]
 public enum UpdateFailureCause : uint {
     /// <summary>the update did not fail</summary>

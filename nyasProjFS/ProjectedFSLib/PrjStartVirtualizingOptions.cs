@@ -1,3 +1,5 @@
+using System.Runtime.InteropServices;
+
 namespace nyasProjFS.ProjectedFSLib;
 
 public struct PrjStartVirtualizingOptions
@@ -5,6 +7,7 @@ public struct PrjStartVirtualizingOptions
     public PrjStartVirtualizingFlags Flags;
     public uint PoolThreadCount;
     public uint ConcurrentThreadCount;
-    public /* PrjNotificationMapping* */ nint NotificationMappings;
+    [MarshalAs(UnmanagedType.LPArray)]
+    public PrjNotificationMapping[] NotificationMappings;
     public uint NotificationMappingsCount;
 }

@@ -47,13 +47,13 @@ public static class CallbackTypes
     public delegate HResult PrjNotification(
         ref PrjCallbackData callbackData,
         [MarshalAs(UnmanagedType.I1)] bool isDirectory,
-        PrjNotification notification,
+        ProjectedFSLib.PrjNotification notification,
         [MarshalAs(UnmanagedType.LPTStr)] string destinationFileName,
-        ref PrjNotificationParameters operationParameters
+        ref PrjNotificationParameters notificationParameters
     );
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate HResult PrjCancelCommand(
+    public delegate void PrjCancelCommand(
         ref PrjCallbackData callbackData
     );
 }

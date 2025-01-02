@@ -1,9 +1,9 @@
 using System.Runtime.InteropServices;
 using nyasProjFS.ProjectedFSLib;
+using static nyasProjFS.ProjectedFSLib.FunctionTypes;
+using static nyasProjFS.ProjectedFSLib_Deprecated.FunctionTypes;
 
 namespace nyasProjFS;
-
-using BetaFunctionTypes = ProjectedFSLib_Deprecated.FunctionTypes;
 
 public static class ApiHelper
 {
@@ -15,91 +15,94 @@ public static class ApiHelper
     /// <summary>the windows build number of the ProjFS Api, the value can be `Beta`, `Release`, `Additional` in `BuildNumbers`, or 0 when not initialized</summary>
     public static int ApiLevel { get; private set; } = 0;
 
+    public static bool UseBetaApi => ApiLevel == BuildNumbers.Beta;
+    public static bool HasAdditionalApi => ApiLevel >= BuildNumbers.Additional;
+
     // Release ProjFS APIs
-    public static FunctionTypes.PrjStartVirtualizing?             PrjStartVirtualizing              { get; private set; }
-    public static FunctionTypes.PrjStopVirtualizing?              PrjStopVirtualizing               { get; private set; }
-    public static FunctionTypes.PrjWriteFileData?                 PrjWriteFileData                  { get; private set; }
-    public static FunctionTypes.PrjWritePlaceholderInfo?          PrjWritePlaceholderInfo           { get; private set; }
-    public static FunctionTypes.PrjAllocateAlignedBuffer?         PrjAllocateAlignedBuffer          { get; private set; }
-    public static FunctionTypes.PrjFreeAlignedBuffer?             PrjFreeAlignedBuffer              { get; private set; }
-    public static FunctionTypes.PrjGetVirtualizationInstanceInfo? PrjGetVirtualizationInstanceInfo  { get; private set; }
-    public static FunctionTypes.PrjUpdateFileIfNeeded?            PrjUpdateFileIfNeeded             { get; private set; }
-    public static FunctionTypes.PrjMarkDirectoryAsPlaceholder?    PrjMarkDirectoryAsPlaceholder     { get; private set; }
+    public static PrjStartVirtualizing?             PrjStartVirtualizing              { get; private set; }
+    public static PrjStopVirtualizing?              PrjStopVirtualizing               { get; private set; }
+    public static PrjWriteFileData?                 PrjWriteFileData                  { get; private set; }
+    public static PrjWritePlaceholderInfo?          PrjWritePlaceholderInfo           { get; private set; }
+    public static PrjAllocateAlignedBuffer?         PrjAllocateAlignedBuffer          { get; private set; }
+    public static PrjFreeAlignedBuffer?             PrjFreeAlignedBuffer              { get; private set; }
+    public static PrjGetVirtualizationInstanceInfo? PrjGetVirtualizationInstanceInfo  { get; private set; }
+    public static PrjUpdateFileIfNeeded?            PrjUpdateFileIfNeeded             { get; private set; }
+    public static PrjMarkDirectoryAsPlaceholder?    PrjMarkDirectoryAsPlaceholder     { get; private set; }
     private static bool TryLoadReleaseApi(nint dllPtr)
     {
         if (!NativeLibrary.TryGetExport(dllPtr, nameof(PrjStartVirtualizing), out nint funcPtr)) { return false; }
-        PrjStartVirtualizing = Marshal.GetDelegateForFunctionPointer<ProjectedFSLib.FunctionTypes.PrjStartVirtualizing>(funcPtr);
+        PrjStartVirtualizing = Marshal.GetDelegateForFunctionPointer<PrjStartVirtualizing>(funcPtr);
 
-        PrjStopVirtualizing              = GetProc<ProjectedFSLib.FunctionTypes.PrjStopVirtualizing             >(dllPtr, nameof(PrjStopVirtualizing             ));
-        PrjWriteFileData                 = GetProc<ProjectedFSLib.FunctionTypes.PrjWriteFileData                >(dllPtr, nameof(PrjWriteFileData                ));
-        PrjWritePlaceholderInfo          = GetProc<ProjectedFSLib.FunctionTypes.PrjWritePlaceholderInfo         >(dllPtr, nameof(PrjWritePlaceholderInfo         ));
-        PrjAllocateAlignedBuffer         = GetProc<ProjectedFSLib.FunctionTypes.PrjAllocateAlignedBuffer        >(dllPtr, nameof(PrjAllocateAlignedBuffer        ));
-        PrjFreeAlignedBuffer             = GetProc<ProjectedFSLib.FunctionTypes.PrjFreeAlignedBuffer            >(dllPtr, nameof(PrjFreeAlignedBuffer            ));
-        PrjGetVirtualizationInstanceInfo = GetProc<ProjectedFSLib.FunctionTypes.PrjGetVirtualizationInstanceInfo>(dllPtr, nameof(PrjGetVirtualizationInstanceInfo));
-        PrjUpdateFileIfNeeded            = GetProc<ProjectedFSLib.FunctionTypes.PrjUpdateFileIfNeeded           >(dllPtr, nameof(PrjUpdateFileIfNeeded           ));
-        PrjMarkDirectoryAsPlaceholder    = GetProc<ProjectedFSLib.FunctionTypes.PrjMarkDirectoryAsPlaceholder   >(dllPtr, nameof(PrjMarkDirectoryAsPlaceholder   ));
+        PrjStopVirtualizing              = GetProc<PrjStopVirtualizing             >(dllPtr, nameof(PrjStopVirtualizing             ));
+        PrjWriteFileData                 = GetProc<PrjWriteFileData                >(dllPtr, nameof(PrjWriteFileData                ));
+        PrjWritePlaceholderInfo          = GetProc<PrjWritePlaceholderInfo         >(dllPtr, nameof(PrjWritePlaceholderInfo         ));
+        PrjAllocateAlignedBuffer         = GetProc<PrjAllocateAlignedBuffer        >(dllPtr, nameof(PrjAllocateAlignedBuffer        ));
+        PrjFreeAlignedBuffer             = GetProc<PrjFreeAlignedBuffer            >(dllPtr, nameof(PrjFreeAlignedBuffer            ));
+        PrjGetVirtualizationInstanceInfo = GetProc<PrjGetVirtualizationInstanceInfo>(dllPtr, nameof(PrjGetVirtualizationInstanceInfo));
+        PrjUpdateFileIfNeeded            = GetProc<PrjUpdateFileIfNeeded           >(dllPtr, nameof(PrjUpdateFileIfNeeded           ));
+        PrjMarkDirectoryAsPlaceholder    = GetProc<PrjMarkDirectoryAsPlaceholder   >(dllPtr, nameof(PrjMarkDirectoryAsPlaceholder   ));
         return true;
     }
 
     // Additional ProjFS APIs
-    public static FunctionTypes.PrjWritePlaceholderInfo2? PrjWritePlaceholderInfo2 { get; private set; }
-    public static FunctionTypes.PrjFillDirEntryBuffer2?   PrjFillDirEntryBuffer2   { get; private set; }
+    public static PrjWritePlaceholderInfo2? PrjWritePlaceholderInfo2 { get; private set; }
+    public static PrjFillDirEntryBuffer2?   PrjFillDirEntryBuffer2   { get; private set; }
     private static bool TryLoadAdditionalApi(nint dllPtr)
     {
         if (!NativeLibrary.TryGetExport(dllPtr, nameof(PrjWritePlaceholderInfo2), out nint funcPtr)) { return false; }
-        PrjWritePlaceholderInfo2 = Marshal.GetDelegateForFunctionPointer<FunctionTypes.PrjWritePlaceholderInfo2>(funcPtr);
+        PrjWritePlaceholderInfo2 = Marshal.GetDelegateForFunctionPointer<PrjWritePlaceholderInfo2>(funcPtr);
 
-        PrjFillDirEntryBuffer2 = GetProc<FunctionTypes.PrjFillDirEntryBuffer2>(dllPtr, nameof(PrjFillDirEntryBuffer2));
+        PrjFillDirEntryBuffer2 = GetProc<PrjFillDirEntryBuffer2>(dllPtr, nameof(PrjFillDirEntryBuffer2));
         return true;
     }
 
     // Beta ProjFS APIs
 #pragma warning disable CS0618
-    public static BetaFunctionTypes.PrjStartVirtualizationInstance?           PrjStartVirtualizationInstance           { get; private set; }
-    public static BetaFunctionTypes.PrjStartVirtualizationInstanceEx?         PrjStartVirtualizationInstanceEx         { get; private set; }
-    public static BetaFunctionTypes.PrjStopVirtualizationInstance?            PrjStopVirtualizationInstance            { get; private set; }
-    public static BetaFunctionTypes.PrjGetVirtualizationInstanceIdFromHandle? PrjGetVirtualizationInstanceIdFromHandle { get; private set; }
-    public static BetaFunctionTypes.PrjConvertDirectoryToPlaceholder?         PrjConvertDirectoryToPlaceholder         { get; private set; }
-    public static BetaFunctionTypes.PrjWritePlaceholderInformation?           PrjWritePlaceholderInformation           { get; private set; }
-    public static BetaFunctionTypes.PrjUpdatePlaceholderIfNeeded?             PrjUpdatePlaceholderIfNeeded             { get; private set; }
-    public static BetaFunctionTypes.PrjWriteFile?                             PrjWriteFile                             { get; private set; }
-    public static BetaFunctionTypes.PrjCommandCallbacksInit?                  PrjCommandCallbacksInit                  { get; private set; }
+    public static PrjStartVirtualizationInstance?           PrjStartVirtualizationInstance           { get; private set; }
+    public static PrjStartVirtualizationInstanceEx?         PrjStartVirtualizationInstanceEx         { get; private set; }
+    public static PrjStopVirtualizationInstance?            PrjStopVirtualizationInstance            { get; private set; }
+    public static PrjGetVirtualizationInstanceIdFromHandle? PrjGetVirtualizationInstanceIdFromHandle { get; private set; }
+    public static PrjConvertDirectoryToPlaceholder?         PrjConvertDirectoryToPlaceholder         { get; private set; }
+    public static PrjWritePlaceholderInformation?           PrjWritePlaceholderInformation           { get; private set; }
+    public static PrjUpdatePlaceholderIfNeeded?             PrjUpdatePlaceholderIfNeeded             { get; private set; }
+    public static PrjWriteFile?                             PrjWriteFile                             { get; private set; }
+    public static PrjCommandCallbacksInit?                  PrjCommandCallbacksInit                  { get; private set; }
     private static bool TryLoadBetaApi(nint dllPtr)
     {
         if (!NativeLibrary.TryGetExport(dllPtr, nameof(PrjStartVirtualizationInstance), out nint funcPtr)) { return false; }
-        PrjStartVirtualizationInstance = Marshal.GetDelegateForFunctionPointer<BetaFunctionTypes.PrjStartVirtualizationInstance>(funcPtr);
+        PrjStartVirtualizationInstance = Marshal.GetDelegateForFunctionPointer<PrjStartVirtualizationInstance>(funcPtr);
 
-        PrjStartVirtualizationInstanceEx         = GetProc<BetaFunctionTypes.PrjStartVirtualizationInstanceEx        >(dllPtr, nameof(PrjStartVirtualizationInstanceEx        ));
-        PrjStopVirtualizationInstance            = GetProc<BetaFunctionTypes.PrjStopVirtualizationInstance           >(dllPtr, nameof(PrjStopVirtualizationInstance           ));
-        PrjGetVirtualizationInstanceIdFromHandle = GetProc<BetaFunctionTypes.PrjGetVirtualizationInstanceIdFromHandle>(dllPtr, nameof(PrjGetVirtualizationInstanceIdFromHandle));
-        PrjConvertDirectoryToPlaceholder         = GetProc<BetaFunctionTypes.PrjConvertDirectoryToPlaceholder        >(dllPtr, nameof(PrjConvertDirectoryToPlaceholder        ));
-        PrjWritePlaceholderInformation           = GetProc<BetaFunctionTypes.PrjWritePlaceholderInformation          >(dllPtr, nameof(PrjWritePlaceholderInformation          ));
-        PrjUpdatePlaceholderIfNeeded             = GetProc<BetaFunctionTypes.PrjUpdatePlaceholderIfNeeded            >(dllPtr, nameof(PrjUpdatePlaceholderIfNeeded            ));
-        PrjWriteFile                             = GetProc<BetaFunctionTypes.PrjWriteFile                            >(dllPtr, nameof(PrjWriteFile                            ));
-        PrjCommandCallbacksInit                  = GetProc<BetaFunctionTypes.PrjCommandCallbacksInit                 >(dllPtr, nameof(PrjCommandCallbacksInit                 ));
+        PrjStartVirtualizationInstanceEx         = GetProc<PrjStartVirtualizationInstanceEx        >(dllPtr, nameof(PrjStartVirtualizationInstanceEx        ));
+        PrjStopVirtualizationInstance            = GetProc<PrjStopVirtualizationInstance           >(dllPtr, nameof(PrjStopVirtualizationInstance           ));
+        PrjGetVirtualizationInstanceIdFromHandle = GetProc<PrjGetVirtualizationInstanceIdFromHandle>(dllPtr, nameof(PrjGetVirtualizationInstanceIdFromHandle));
+        PrjConvertDirectoryToPlaceholder         = GetProc<PrjConvertDirectoryToPlaceholder        >(dllPtr, nameof(PrjConvertDirectoryToPlaceholder        ));
+        PrjWritePlaceholderInformation           = GetProc<PrjWritePlaceholderInformation          >(dllPtr, nameof(PrjWritePlaceholderInformation          ));
+        PrjUpdatePlaceholderIfNeeded             = GetProc<PrjUpdatePlaceholderIfNeeded            >(dllPtr, nameof(PrjUpdatePlaceholderIfNeeded            ));
+        PrjWriteFile                             = GetProc<PrjWriteFile                            >(dllPtr, nameof(PrjWriteFile                            ));
+        PrjCommandCallbacksInit                  = GetProc<PrjCommandCallbacksInit                 >(dllPtr, nameof(PrjCommandCallbacksInit                 ));
         return true;
     }
 #pragma warning restore CS0618
 
     // Common ProjFS APIs
-    public static FunctionTypes.PrjClearNegativePathCache   PrjClearNegativePathCache   { get; private set; } = DummyPrjClearNegativePathCache;
-    public static FunctionTypes.PrjDeleteFile               PrjDeleteFile               { get; private set; } = DummyPrjDeleteFile;
-    public static FunctionTypes.PrjGetOnDiskFileState       PrjGetOnDiskFileState       { get; private set; } = DummyPrjGetOnDiskFileState;
-    public static FunctionTypes.PrjCompleteCommand          PrjCompleteCommand          { get; private set; } = DummyPrjCompleteCommand;
-    public static FunctionTypes.PrjFillDirEntryBuffer       PrjFillDirEntryBuffer       { get; private set; } = DummyPrjFillDirEntryBuffer;
-    public static FunctionTypes.PrjFileNameMatch            PrjFileNameMatch            { get; private set; } = DummyPrjFileNameMatch;
-    public static FunctionTypes.PrjFileNameCompare          PrjFileNameCompare          { get; private set; } = DummyPrjFileNameCompare;
-    public static FunctionTypes.PrjDoesNameContainWildCards PrjDoesNameContainWildCards { get; private set; } = DummyPrjDoesNameContainWildCards;
+    public static PrjClearNegativePathCache   PrjClearNegativePathCache   { get; private set; } = DummyPrjClearNegativePathCache;
+    public static PrjDeleteFile               PrjDeleteFile               { get; private set; } = DummyPrjDeleteFile;
+    public static PrjGetOnDiskFileState       PrjGetOnDiskFileState       { get; private set; } = DummyPrjGetOnDiskFileState;
+    public static unsafe PrjCompleteCommand   PrjCompleteCommand          { get; private set; } = DummyPrjCompleteCommand;
+    public static PrjFillDirEntryBuffer       PrjFillDirEntryBuffer       { get; private set; } = DummyPrjFillDirEntryBuffer;
+    public static PrjFileNameMatch            PrjFileNameMatch            { get; private set; } = DummyPrjFileNameMatch;
+    public static PrjFileNameCompare          PrjFileNameCompare          { get; private set; } = DummyPrjFileNameCompare;
+    public static PrjDoesNameContainWildCards PrjDoesNameContainWildCards { get; private set; } = DummyPrjDoesNameContainWildCards;
     private static void LoadCommandApi(nint dllPtr)
     {
-        PrjClearNegativePathCache   = GetProc<FunctionTypes.PrjClearNegativePathCache  >(dllPtr, nameof(PrjClearNegativePathCache  ));
-        PrjDeleteFile               = GetProc<FunctionTypes.PrjDeleteFile              >(dllPtr, nameof(PrjDeleteFile              ));
-        PrjGetOnDiskFileState       = GetProc<FunctionTypes.PrjGetOnDiskFileState      >(dllPtr, nameof(PrjGetOnDiskFileState      ));
-        PrjCompleteCommand          = GetProc<FunctionTypes.PrjCompleteCommand         >(dllPtr, nameof(PrjCompleteCommand         ));
-        PrjFillDirEntryBuffer       = GetProc<FunctionTypes.PrjFillDirEntryBuffer      >(dllPtr, nameof(PrjFillDirEntryBuffer      ));
-        PrjFileNameMatch            = GetProc<FunctionTypes.PrjFileNameMatch           >(dllPtr, nameof(PrjFileNameMatch           ));
-        PrjFileNameCompare          = GetProc<FunctionTypes.PrjFileNameCompare         >(dllPtr, nameof(PrjFileNameCompare         ));
-        PrjDoesNameContainWildCards = GetProc<FunctionTypes.PrjDoesNameContainWildCards>(dllPtr, nameof(PrjDoesNameContainWildCards));
+        PrjClearNegativePathCache   = GetProc<PrjClearNegativePathCache  >(dllPtr, nameof(PrjClearNegativePathCache  ));
+        PrjDeleteFile               = GetProc<PrjDeleteFile              >(dllPtr, nameof(PrjDeleteFile              ));
+        PrjGetOnDiskFileState       = GetProc<PrjGetOnDiskFileState      >(dllPtr, nameof(PrjGetOnDiskFileState      ));
+        PrjCompleteCommand          = GetProc<PrjCompleteCommand         >(dllPtr, nameof(PrjCompleteCommand         ));
+        PrjFillDirEntryBuffer       = GetProc<PrjFillDirEntryBuffer      >(dllPtr, nameof(PrjFillDirEntryBuffer      ));
+        PrjFileNameMatch            = GetProc<PrjFileNameMatch           >(dllPtr, nameof(PrjFileNameMatch           ));
+        PrjFileNameCompare          = GetProc<PrjFileNameCompare         >(dllPtr, nameof(PrjFileNameCompare         ));
+        PrjDoesNameContainWildCards = GetProc<PrjDoesNameContainWildCards>(dllPtr, nameof(PrjDoesNameContainWildCards));
     }
 
     /// <summary>initialize this ProjFS API</summary>
@@ -136,7 +139,7 @@ public static class ApiHelper
     private static HResult DummyPrjClearNegativePathCache(nint _, out uint @out) => (HResult) (@out = default);
     private static HResult DummyPrjDeleteFile(nint _, string __, UpdateType ___, out UpdateFailureCause @out) => (HResult) (@out = default);
     private static HResult DummyPrjGetOnDiskFileState(string _, out OnDiskFileState @out) => (HResult) (@out = default);
-    private static HResult DummyPrjCompleteCommand(nint _, int __, HResult ___, ref PrjCompleteCommandExtendedParameters ____) => default;
+    private static unsafe HResult DummyPrjCompleteCommand(nint _, int __, HResult ___, PrjCompleteCommandExtendedParameters* ____) => default;
     private static HResult DummyPrjFillDirEntryBuffer(string _, ref PrjFileBasicInfo __, nint ___) => default;
     private static bool DummyPrjFileNameMatch(string _, string __) => default;
     private static int DummyPrjFileNameCompare(string _, string __) => default;
