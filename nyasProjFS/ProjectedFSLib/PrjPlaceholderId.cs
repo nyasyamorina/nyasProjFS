@@ -1,6 +1,6 @@
 namespace nyasProjFS.ProjectedFSLib;
 
-public static class PrjPlaceholderId
+internal static class PrjPlaceholderId
 {
-    public const int Length = 128;
+    internal const int Length = 128;
 }

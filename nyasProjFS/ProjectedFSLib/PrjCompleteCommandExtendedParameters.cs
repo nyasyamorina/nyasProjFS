@@ -5,21 +5,21 @@ namespace nyasProjFS.ProjectedFSLib;
 using PrjDirEntryBufferHandle = nint;
 
 [StructLayout(LayoutKind.Explicit, Size = 12)]
-public struct PrjCompleteCommandExtendedParameters
+internal struct PrjCompleteCommandExtendedParameters
 {
-    public struct NotificationType
+    internal struct NotificationType
     {
-        public nyasProjFS.NotificationType NotificationMask;
+        internal nyasProjFS.NotificationType NotificationMask;
     }
-    public struct EnumerationType
+    internal struct EnumerationType
     {
-        public PrjDirEntryBufferHandle DirEntryBufferHandle;
+        internal PrjDirEntryBufferHandle DirEntryBufferHandle;
     }
 
     [FieldOffset(0)]
-    public PrjCompleteCommandType CommandType;
+    internal PrjCompleteCommandType CommandType;
     [FieldOffset(4)]
-    public NotificationType Notification;
+    internal NotificationType Notification;
     [FieldOffset(4)]
-    public EnumerationType Enumeration;
+    internal EnumerationType Enumeration;
 }

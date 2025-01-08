@@ -1,6 +1,6 @@
 namespace nyasProjFS.ProjectedFSLib;
 
-public enum PrjNotification : int {
+internal enum PrjNotification : int {
     FileOpened                     = 0x00000002,
     NewFileCreated                 = 0x00000004,
     FileOverwritten                = 0x00000008,

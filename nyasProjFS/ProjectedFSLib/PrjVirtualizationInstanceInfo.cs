@@ -1,7 +1,7 @@
 namespace nyasProjFS.ProjectedFSLib;
 
-public struct PrjVirtualizationInstanceInfo
+internal struct PrjVirtualizationInstanceInfo
 {
-    public Guid InstanceId;
-    public uint WriteAlignment;
+    internal Guid InstanceId;
+    internal uint WriteAlignment;
 }

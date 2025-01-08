@@ -39,7 +39,7 @@ public class WriteBuffer : IWriteBuffer
 
     internal unsafe WriteBuffer(uint bufferSize, PrjNamespaceVirtualizationContext namespaceCtx)
     {
-        _buffer = ApiHelper.PrjAllocateAlignedBuffer!(namespaceCtx, bufferSize);
+        _buffer = ProjectedFSLib.Api.PrjAllocateAlignedBuffer(namespaceCtx, bufferSize);
         if (_buffer == 0) { throw new OutOfMemoryException("unable to allocate WriteBuffer"); }
         _namespaceCtx = namespaceCtx;
         _stream = new((byte*) _buffer, bufferSize, bufferSize, FileAccess.Write);
@@ -62,7 +62,7 @@ public class WriteBuffer : IWriteBuffer
     ~WriteBuffer()
     {
         if (_namespaceCtx != PrjNamespaceVirtualizationContext.Zero) {
-            ApiHelper.PrjFreeAlignedBuffer!((nint) _buffer);
+            ProjectedFSLib.Api.PrjFreeAlignedBuffer((nint) _buffer);
         }
         else unsafe {
             NativeMemory.AlignedFree((void*) _buffer); // in <corecrt_malloc.h>

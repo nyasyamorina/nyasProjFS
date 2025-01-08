@@ -59,11 +59,11 @@ public class DirectoryEnumerationResults : IDirectoryEnumerationResults
     {
         ValidateFileName(fileName);
 
-        PrjFileBasicInfo basicInfo = new() {
+        PrjFileBasicInfo? basicInfo = new PrjFileBasicInfo {
             IsDirectory = isDirectory,
             FileSize = fileSize,
         };
-        HResult hr = ApiHelper.PrjFillDirEntryBuffer(fileName, ref basicInfo, _dirEntryBufferHandle);
+        HResult hr = Api.PrjFillDirEntryBuffer(fileName, in basicInfo, _dirEntryBufferHandle);
         return hr.IsSuccess();
     }
 
@@ -112,8 +112,8 @@ public class DirectoryEnumerationResults : IDirectoryEnumerationResults
     ) {
         ValidateFileName(fileName);
 
-        PrjFileBasicInfo basicInfo = BuildFileBasicInfo(fileSize, isDirectory, fileAttributes, creationTime, lastAccessTime, lastWriteTime, changeTime);
-        HResult hr = ApiHelper.PrjFillDirEntryBuffer(fileName, ref basicInfo, _dirEntryBufferHandle);
+        PrjFileBasicInfo? basicInfo = BuildFileBasicInfo(fileSize, isDirectory, fileAttributes, creationTime, lastAccessTime, lastWriteTime, changeTime);
+        HResult hr = Api.PrjFillDirEntryBuffer(fileName, in basicInfo, _dirEntryBufferHandle);
         return hr.IsSuccess();
     }
 
@@ -168,15 +168,17 @@ public class DirectoryEnumerationResults : IDirectoryEnumerationResults
         }
         ValidateFileName(fileName);
 
-        PrjFileBasicInfo basicInfo = BuildFileBasicInfo(fileSize, isDirectory, fileAttributes, creationTime, lastAccessTime, lastWriteTime, changeTime);
+        PrjFileBasicInfo? basicInfo = BuildFileBasicInfo(fileSize, isDirectory, fileAttributes, creationTime, lastAccessTime, lastWriteTime, changeTime);
 
-        PrjExtendedInfo extendedInfo = default;
+        PrjExtendedInfo? extendedInfo = null;
         if (symlinkTargetOrNull is not null) {
-            extendedInfo.InfoType = PrjExtInfoType.Symlink;
-            extendedInfo.Symlink.TargetName = symlinkTargetOrNull;
+            PrjExtendedInfo tmp = default;
+            tmp.InfoType = PrjExtInfoType.Symlink;
+            tmp.Symlink.TargetName = symlinkTargetOrNull;
+            extendedInfo = tmp;
         }
 
-        HResult hr = ApiHelper.PrjFillDirEntryBuffer2!(_dirEntryBufferHandle, fileName, ref basicInfo, ref extendedInfo);
+        HResult hr = Api.PrjFillDirEntryBuffer2(_dirEntryBufferHandle, fileName, in basicInfo, in extendedInfo);
         return hr.IsSuccess();
     }
 
@@ -189,7 +191,7 @@ public class DirectoryEnumerationResults : IDirectoryEnumerationResults
         }
     }
 
-    private static PrjFileBasicInfo BuildFileBasicInfo(
+    private static PrjFileBasicInfo? BuildFileBasicInfo(
         long fileSize,
         bool isDirectory,
         FileAttributes fileAttributes,
@@ -205,16 +207,16 @@ public class DirectoryEnumerationResults : IDirectoryEnumerationResults
         };
 
         if (creationTime != DateTime.MinValue) {
-            basicInfo.CreationTime.QuadPart = creationTime.ToFileTime();
+            basicInfo.CreationTime = creationTime.ToFileTime();
         }
         if (lastAccessTime != DateTime.MinValue) {
-            basicInfo.LastAccessTime.QuadPart = lastAccessTime.ToFileTime();
+            basicInfo.LastAccessTime = lastAccessTime.ToFileTime();
         }
         if (lastWriteTime != DateTime.MinValue) {
-            basicInfo.LastWriteTime.QuadPart = lastWriteTime.ToFileTime();
+            basicInfo.LastWriteTime = lastWriteTime.ToFileTime();
         }
         if (changeTime != DateTime.MinValue) {
-            basicInfo.ChangeTime.QuadPart = changeTime.ToFileTime();
+            basicInfo.ChangeTime = changeTime.ToFileTime();
         }
 
         return basicInfo;

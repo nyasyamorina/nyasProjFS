@@ -1,5 +1,5 @@
 namespace nyasProjFS.ProjectedFSLib;
 
-public enum PrjExtInfoType : int {
+internal enum PrjExtInfoType : int {
     Symlink = 1
 }

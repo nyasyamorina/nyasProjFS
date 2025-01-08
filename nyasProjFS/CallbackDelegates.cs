@@ -223,7 +223,7 @@ public static class CallbackDelegates
     /// </returns>
     public delegate bool NotifyPreRename(
         string relativePath,
-        string destinationPath,
+        string? destinationPath,
         uint triggeringProcessId,
         string triggeringProcessImageFileName
     );
@@ -269,7 +269,7 @@ public static class CallbackDelegates
     /// </returns>
     public delegate bool NotifyPreCreateHardlink(
         string relativePath,
-        string destinationPath,
+        string? destinationPath,
         uint triggeringProcessId,
         string triggeringProcessImageFileName
     );
@@ -321,7 +321,7 @@ public static class CallbackDelegates
     /// </param>
     public delegate void NotifyFileRenamed(
         string relativePath,
-        string destinationPath,
+        string? destinationPath,
         bool isDirectory,
         uint triggeringProcessId,
         string triggeringProcessImageFileName,
@@ -363,7 +363,7 @@ public static class CallbackDelegates
     ///     If <paramref name="triggeringProcessId"/> is 0 this will be null.</param>
     public delegate void NotifyHardlinkCreated(
         string relativePath,
-        string destinationPath,
+        string? destinationPath,
         uint triggeringProcessId,
         string triggeringProcessImageFileName
     );

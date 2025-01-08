@@ -5,6 +5,7 @@
     <LangVersion>13.0</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <OutputType>Exe</OutputType>
     <BaseOutputPath>..\BuildOutput</BaseOutputPath>
 	  <!-- <UseCommonOutputDirectory>true</UseCommonOutputDirectory> --> <!-- dependencies will not be compiled when this option is enabled -->

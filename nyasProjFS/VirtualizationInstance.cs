@@ -3,7 +3,9 @@ using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using nyasProjFS.ProjectedFSLib;
-using nyasProjFS.ProjectedFSLib_Deprecated;
+using nyasProjFS.ProjectedFSLib.Deprecated;
+using static nyasProjFS.ProjectedFSLib.Api;
+using static nyasProjFS.ProjectedFSLib.Deprecated.Api;
 using static nyasProjFS.CallbackDelegates;
 using static nyasProjFS.Win32Native;
 
@@ -31,7 +33,7 @@ public class VirtualizationInstance : IVirtualizationInstance
 
     private static bool Win32FromHResult(HResult hr, out uint Win32Error)
     {
-        if (((uint) hr & 0xFFFF0000) == 0x8007) {
+        if (((uint) hr & 0xFFFF0000) == 0x80070000) {
             Win32Error = (uint) hr & 0x0000FFFF;
             return true;
         }
@@ -305,7 +307,7 @@ public class VirtualizationInstance : IVirtualizationInstance
         /// <exception cref="InvalidOperationException">
         /// The provider has already called <see cref="StartVirtualizing"/>.
         /// </exception>
-        set { ConfirmStarted(); _notifyPreDeleteCallback = value; }
+        set { ConfirmNotStarted(); _notifyPreDeleteCallback = value; }
     }
 
     /// <summary>Stores the provider's implementation of <see cref="NotifyPreRename"/>.</summary>
@@ -458,6 +460,7 @@ public class VirtualizationInstance : IVirtualizationInstance
 
     #endregion
     #region Public methods
+    #pragma warning disable CS0618
 
     /// <summary>
     /// Starts the virtualization instance, making it available to service I/O and invoke callbacks
@@ -508,7 +511,7 @@ public class VirtualizationInstance : IVirtualizationInstance
         if (ApiHelper.UseBetaApi) {
             FindBytesPerSectorAndAlignment();
 
-            ApiHelper.PrjCommandCallbacksInit!(PrjCommandCallbacks.StructSize, out PrjCommandCallbacks callbacks);
+            PrjCommandCallbacksInit(PrjCommandCallbacks.StructSize, out PrjCommandCallbacks callbacks);
             callbacks.PrjStartDirectoryEnumeration = DefaultCallbacks.PrjStartDirectoryEnumeration;
             callbacks.PrjEndDirectoryEnumeration   = DefaultCallbacks.PrjEndDirectoryEnumeration;
             callbacks.PrjGetDirectoryEnumeration   = DefaultCallbacks.PrjGetDirectoryEnumeration;
@@ -520,7 +523,6 @@ public class VirtualizationInstance : IVirtualizationInstance
 
             const uint PrjFlagInstanceNegativePathCache = 2;
             VirtualizationInstExtendedParameters extendedParameters = default;
-            extendedParameters.Size = VirtualizationInstExtendedParameters.StructSize;
             extendedParameters.Flags = _enableNegativePathCache ? PrjFlagInstanceNegativePathCache : 0;
             extendedParameters.PoolThreadCount = _poolThreadCount;
             extendedParameters.ConcurrentThreadCount = _concurrentThreadCount;
@@ -535,17 +537,17 @@ public class VirtualizationInstance : IVirtualizationInstance
                     ++index;
                 }
                 extendedParameters.NotificationMappings = nativeNotificationMappings;
-                extendedParameters.NumNotificationMappingsCount = (uint) _notificationMappings.Count;
 
-                startResult = ApiHelper.PrjStartVirtualizationInstanceEx!(
-                    _virtualizationRootPath, ref callbacks,
-                    _virtualizationContextGc, ref extendedParameters,
+                VirtualizationInstExtendedParameters? extendedParameters_nullable = extendedParameters;
+                startResult = PrjStartVirtualizationInstanceEx(
+                    _virtualizationRootPath, in callbacks,
+                    _virtualizationContextGc, in extendedParameters_nullable,
                     out _virtualizationContext
                 );
             }
             else {
-                startResult = ApiHelper.PrjStartVirtualizationInstance!(
-                    _virtualizationRootPath, ref callbacks,
+                startResult = PrjStartVirtualizationInstance(
+                    _virtualizationRootPath, in callbacks,
                     extendedParameters.Flags, 0, extendedParameters.PoolThreadCount, extendedParameters.ConcurrentThreadCount,
                     _virtualizationContextGc,
                     out _virtualizationContext
@@ -568,8 +570,7 @@ public class VirtualizationInstance : IVirtualizationInstance
             startOptions.PoolThreadCount = _poolThreadCount;
             startOptions.ConcurrentThreadCount = _concurrentThreadCount;
 
-            if (_notificationMappings.Count == 0) { startOptions.NotificationMappingsCount = 0; }
-            else {
+            if (_notificationMappings.Count > 0) {
                 var nativeNotificationMappings = new PrjNotificationMapping[_notificationMappings.Count];
 
                 uint index = 0;
@@ -579,12 +580,12 @@ public class VirtualizationInstance : IVirtualizationInstance
                     ++index;
                 }
                 startOptions.NotificationMappings = nativeNotificationMappings;
-                startOptions.NotificationMappingsCount = (uint) _notificationMappings.Count;
             }
 
-            startResult = ApiHelper.PrjStartVirtualizing!(
-                _virtualizationRootPath, ref callbacks,
-                _virtualizationContextGc, ref startOptions,
+            PrjStartVirtualizingOptions? startOptions_nallable = startOptions;
+            startResult = PrjStartVirtualizing(
+                _virtualizationRootPath, in callbacks,
+                _virtualizationContextGc, in startOptions_nallable,
                 out _virtualizationContext
             );
         }
@@ -593,10 +594,10 @@ public class VirtualizationInstance : IVirtualizationInstance
         Guid instanceId = default;
         HResult getInfoResult = HResult.Ok;
         if (ApiHelper.UseBetaApi) {
-            getInfoResult = ApiHelper.PrjGetVirtualizationInstanceIdFromHandle!(_virtualizationContext, out instanceId);
+            getInfoResult = PrjGetVirtualizationInstanceIdFromHandle(_virtualizationContext, out instanceId);
         }
         else {
-            getInfoResult = ApiHelper.PrjGetVirtualizationInstanceInfo!(_virtualizationContext, out PrjVirtualizationInstanceInfo instanceInfo);
+            getInfoResult = PrjGetVirtualizationInstanceInfo(_virtualizationContext, out PrjVirtualizationInstanceInfo instanceInfo);
             instanceId = instanceInfo.InstanceId;
         }
         if (getInfoResult.IsFailed()) {
@@ -619,11 +620,11 @@ public class VirtualizationInstance : IVirtualizationInstance
     {
         HResult hr = HResult.Ok;
         if (ApiHelper.UseBetaApi) {
-            hr = ApiHelper.PrjStopVirtualizationInstance!(_virtualizationContext);
+            hr = PrjStopVirtualizationInstance(_virtualizationContext);
         }
         else {
             try {
-                ApiHelper.PrjStopVirtualizing!(_virtualizationContext);
+                PrjStopVirtualizing(_virtualizationContext);
             }
             catch {
                 const uint E_FAIL = 0x80004005;
@@ -662,7 +663,7 @@ public class VirtualizationInstance : IVirtualizationInstance
     /// </returns>
     public virtual HResult ClearNegativePathCache(out uint totalEntryNumber)
     {
-        return ApiHelper.PrjClearNegativePathCache(_virtualizationContext, out totalEntryNumber);
+        return PrjClearNegativePathCache(_virtualizationContext, out totalEntryNumber);
     }
 
     /// <summary>
@@ -708,10 +709,10 @@ public class VirtualizationInstance : IVirtualizationInstance
     {
         if (buffer is null) { return HResult.InvalidArg; }
         if (ApiHelper.UseBetaApi) {
-            return ApiHelper.PrjWriteFile!(_virtualizationContext, ref dataStreamId, buffer.Pointer, byteOffset, length);
+            return PrjWriteFile(_virtualizationContext, in dataStreamId, buffer.Pointer, byteOffset, length);
         }
         else {
-            return ApiHelper.PrjWriteFileData!(_virtualizationContext, ref dataStreamId, buffer.Pointer, byteOffset, length);
+            return PrjWriteFileData(_virtualizationContext, in dataStreamId, buffer.Pointer, byteOffset, length);
         }
     }
 
@@ -775,7 +776,7 @@ public class VirtualizationInstance : IVirtualizationInstance
     /// </returns>
     public virtual HResult DeleteFile(string relativePath, UpdateType updateFlags, out UpdateFailureCause failureReason)
     {
-        return ApiHelper.PrjDeleteFile(_virtualizationContext, relativePath, updateFlags, out failureReason);
+        return PrjDeleteFile(_virtualizationContext, relativePath, updateFlags, out failureReason);
     }
 
     /// <summary>
@@ -881,9 +882,9 @@ public class VirtualizationInstance : IVirtualizationInstance
                 creationTime, lastAccessTime, lastWriteTime, changeTime, fileAttributes,
                 isDirectory ? 0 : endOfFile, isDirectory, contentId, providerId
             );
-            return ApiHelper.PrjWritePlaceholderInformation!(
+            return PrjWritePlaceholderInformation(
                 _virtualizationContext, relativePath,
-                ref placeholderInfo, PrjPlaceholderInformation.StructSize
+                in placeholderInfo, PrjPlaceholderInformation.StructSize
             );
         }
         else {
@@ -891,9 +892,9 @@ public class VirtualizationInstance : IVirtualizationInstance
                 creationTime, lastAccessTime, lastWriteTime, changeTime, fileAttributes,
                 isDirectory ? 0 : endOfFile, isDirectory, contentId, providerId
             );
-            return ApiHelper.PrjWritePlaceholderInfo!(
+            return PrjWritePlaceholderInfo(
                 _virtualizationContext, relativePath,
-                ref placeholderInfo, PrjPlaceholderInfo.StructSize
+                in placeholderInfo, PrjPlaceholderInfo.StructSize
             );
         }
     }
@@ -1009,19 +1010,21 @@ public class VirtualizationInstance : IVirtualizationInstance
             isDirectory ? 0 : endOfFile, isDirectory, contentId, providerId
         );
         if (symlinkTargetOrNull is null) {
-            return ApiHelper.PrjWritePlaceholderInfo!(
+            return PrjWritePlaceholderInfo(
                 _virtualizationContext, relativePath,
-                ref placeholderInfo, PrjPlaceholderInformation.StructSize
+                in placeholderInfo, PrjPlaceholderInformation.StructSize
             );
         }
 
         PrjExtendedInfo extendedInfo = default;
         extendedInfo.InfoType = PrjExtInfoType.Symlink;
         extendedInfo.Symlink.TargetName = symlinkTargetOrNull;
-        return ApiHelper.PrjWritePlaceholderInfo2!(
+
+        PrjExtendedInfo? extendedInfo_nullable = extendedInfo;
+        return PrjWritePlaceholderInfo2(
             _virtualizationContext, relativePath,
-            ref placeholderInfo, PrjPlaceholderInformation.StructSize,
-            ref extendedInfo
+            in placeholderInfo, PrjPlaceholderInformation.StructSize,
+            in extendedInfo_nullable
         );
     }
 
@@ -1147,8 +1150,8 @@ public class VirtualizationInstance : IVirtualizationInstance
                 creationTime, lastAccessTime, lastWriteTime, changeTime, fileAttributes,
                 endOfFile, false, contentId, providerId
             );
-            return ApiHelper.PrjUpdatePlaceholderIfNeeded!(
-                _virtualizationContext, relativePath, ref placeholderInfo,
+            return PrjUpdatePlaceholderIfNeeded(
+                _virtualizationContext, relativePath, in placeholderInfo,
                 (uint) Marshal.OffsetOf<PrjPlaceholderInformation>(nameof(placeholderInfo.VariableData)),
                 updateFlags, out failureReason
             );
@@ -1158,9 +1161,9 @@ public class VirtualizationInstance : IVirtualizationInstance
                 creationTime, lastAccessTime, lastWriteTime, changeTime, fileAttributes,
                 endOfFile, false, contentId, providerId
             );
-            return ApiHelper.PrjUpdateFileIfNeeded!(
+            return PrjUpdateFileIfNeeded(
                 _virtualizationContext, relativePath,
-                ref placeholderInfo, PrjPlaceholderInfo.StructSize,
+                in placeholderInfo, PrjPlaceholderInfo.StructSize,
                 updateFlags, out failureReason
             );
         }
@@ -1213,7 +1216,7 @@ public class VirtualizationInstance : IVirtualizationInstance
     public virtual HResult CompleteCommand(int commandId, HResult completionResult)
     {
         unsafe {
-            return ApiHelper.PrjCompleteCommand(_virtualizationContext, commandId, completionResult, null);
+            return PrjCompleteCommand(_virtualizationContext, commandId, completionResult, in Unsafe.AsRef<PrjCompleteCommandExtendedParameters>(null));
         }
     }
 
@@ -1246,9 +1249,7 @@ public class VirtualizationInstance : IVirtualizationInstance
         PrjCompleteCommandExtendedParameters extendedParameters = default;
         extendedParameters.CommandType = PrjCompleteCommandType.Enumeration;
         extendedParameters.Enumeration.DirEntryBufferHandle = ((DirectoryEnumerationResults) results).DirEntryBufferHandle;
-        unsafe {
-            return ApiHelper.PrjCompleteCommand(_virtualizationContext, commandId, HResult.Ok, &extendedParameters);
-        }
+        return PrjCompleteCommand(_virtualizationContext, commandId, HResult.Ok, in extendedParameters);
     }
 
     /// <summary>
@@ -1288,9 +1289,7 @@ public class VirtualizationInstance : IVirtualizationInstance
         PrjCompleteCommandExtendedParameters extendedParameters = default;
         extendedParameters.CommandType = PrjCompleteCommandType.Notification;
         extendedParameters.Notification.NotificationMask = newNotificationMask;
-        unsafe {
-            return ApiHelper.PrjCompleteCommand(_virtualizationContext, commandId, HResult.Ok, &extendedParameters);
-        }
+        return PrjCompleteCommand(_virtualizationContext, commandId, HResult.Ok, in extendedParameters);
     }
 
     /// <summary>
@@ -1382,7 +1381,7 @@ public class VirtualizationInstance : IVirtualizationInstance
         uint bytesPerSector;
         if (ApiHelper.UseBetaApi) { bytesPerSector = _bytesPerSector; }
         else {
-            HResult result = ApiHelper.PrjGetVirtualizationInstanceInfo!(_virtualizationContext, out PrjVirtualizationInstanceInfo instanceInfo);
+            HResult result = PrjGetVirtualizationInstanceInfo(_virtualizationContext, out PrjVirtualizationInstanceInfo instanceInfo);
             if (result.IsFailed()) {
                 if (!Win32FromHResult(result, out uint error)) { error = ErrorInternalError; }
                 throw FailedToMakeVirtualizationRoot((int) error, "failed to retrieve virtualization instance info for directory {0}");
@@ -1442,24 +1441,25 @@ public class VirtualizationInstance : IVirtualizationInstance
     public virtual HResult MarkDirectoryAsPlaceholder(string targetDirectoryPath, byte[] contentId, byte[] providerId)
     {
         PrjPlaceholderVersionInfo versionInfo = default;
-        SetUpPlaceholderVersionInfo(ref versionInfo, contentId, providerId);
+        versionInfo.ContentId = contentId;
+        versionInfo.ProviderId = providerId;
 
         if (ApiHelper.UseBetaApi) {
-            HResult result = ApiHelper.PrjGetVirtualizationInstanceIdFromHandle!(
+            HResult result = PrjGetVirtualizationInstanceIdFromHandle(
                 _virtualizationContext, out Guid virtualizationInstanceId
             );
             if (result != HResult.Ok) { return result; }
-            return ApiHelper.PrjConvertDirectoryToPlaceholder!(
-                _virtualizationRootPath, targetDirectoryPath, ref versionInfo, 0, ref virtualizationInstanceId
+            return PrjConvertDirectoryToPlaceholder(
+                _virtualizationRootPath, targetDirectoryPath, in versionInfo, 0, in virtualizationInstanceId
             );
         }
         else {
-            HResult result = ApiHelper.PrjGetVirtualizationInstanceInfo!(
+            HResult result = PrjGetVirtualizationInstanceInfo(
                 _virtualizationContext, out PrjVirtualizationInstanceInfo instanceInfo
             );
             if (result.IsFailed()) { return result; }
-            return ApiHelper.PrjMarkDirectoryAsPlaceholder!(
-                _virtualizationRootPath, targetDirectoryPath, ref versionInfo, ref instanceInfo.InstanceId
+            return PrjMarkDirectoryAsPlaceholder(
+                _virtualizationRootPath, targetDirectoryPath, in versionInfo, in instanceInfo.InstanceId
             );
         }
     }
@@ -1495,24 +1495,25 @@ public class VirtualizationInstance : IVirtualizationInstance
         if (ApiHelper.UseBetaApi) {
             const uint PrjFlagVirtualizationRoot = 0x0010;
 
-            return ApiHelper.PrjConvertDirectoryToPlaceholder!(
+            return PrjConvertDirectoryToPlaceholder(
                 rootPath,
                 "",
-                ref versionInfo,
+                in versionInfo,
                 PrjFlagVirtualizationRoot,
-                ref virtualizationInstanceGuid
+                in virtualizationInstanceGuid
             );
         }
         else {
-            return ApiHelper.PrjMarkDirectoryAsPlaceholder!(
+            return PrjMarkDirectoryAsPlaceholder(
                 rootPath,
-                "",
-                ref versionInfo,
-                ref virtualizationInstanceGuid
+                null,
+                in versionInfo,
+                in virtualizationInstanceGuid
             );
         }
     }
 
+    #pragma warning restore CS0618
     #endregion
     #region Private methods
 
@@ -1645,8 +1646,8 @@ public class VirtualizationInstance : IVirtualizationInstance
     private static class DefaultCallbacks
     {
         internal static HResult PrjStartDirectoryEnumeration(
-            ref PrjCallbackData callbackData,
-            ref Guid enumerationId
+            in PrjCallbackData callbackData,
+            in Guid enumerationId
         ) {
             if (callbackData.InstanceContext == 0) { return HResult.InternalError; }
             VirtualizationInstance instance = (VirtualizationInstance) ((GCHandle) callbackData.InstanceContext).Target!;
@@ -1658,8 +1659,8 @@ public class VirtualizationInstance : IVirtualizationInstance
         }
 
         internal static HResult PrjGetDirectoryEnumeration(
-            ref PrjCallbackData callbackData,
-            ref Guid enumerationId,
+            in PrjCallbackData callbackData,
+            in Guid enumerationId,
             string? searchExpression,
             PrjDirEntryBufferHandle dirEntryBufferHandle
         ) {
@@ -1675,8 +1676,8 @@ public class VirtualizationInstance : IVirtualizationInstance
         }
 
         internal static HResult PrjEndDirectoryEnumeration(
-            ref PrjCallbackData callbackData,
-            ref Guid enumerationId
+            in PrjCallbackData callbackData,
+            in Guid enumerationId
         ) {
             if (callbackData.InstanceContext == 0) { return HResult.InternalError; }
             VirtualizationInstance instance = (VirtualizationInstance) ((GCHandle) callbackData.InstanceContext).Target!;
@@ -1685,7 +1686,7 @@ public class VirtualizationInstance : IVirtualizationInstance
         }
 
         internal static HResult PrjGetPlaceholderInfo(
-            ref PrjCallbackData callbackData
+            in PrjCallbackData callbackData
         ) {
             if (callbackData.InstanceContext == 0) { return HResult.InternalError; }
             VirtualizationInstance instance = (VirtualizationInstance) ((GCHandle) callbackData.InstanceContext).Target!;
@@ -1697,14 +1698,20 @@ public class VirtualizationInstance : IVirtualizationInstance
         }
 
         internal static HResult PrjGetFileData(
-            ref PrjCallbackData callbackData,
+            in PrjCallbackData callbackData,
             ulong byteOffset,
             uint length
         ) {
             if (callbackData.InstanceContext == 0) { return HResult.InternalError; }
             VirtualizationInstance instance = (VirtualizationInstance) ((GCHandle) callbackData.InstanceContext).Target!;
 
-            UnpackPlaceholderVersionInfo(callbackData.VersionInfo, out byte[] contentId, out byte[] providerId);
+            byte[] contentId, providerId;
+            if (callbackData.VersionInfo.HasValue) {
+                contentId = callbackData.VersionInfo.Value.ContentId;
+                providerId = callbackData.VersionInfo.Value.ProviderId;
+            }
+            else { contentId = providerId = []; }
+
             return instance.RequiredCallbacks!.GetFileDataCallback(
                 callbackData.CammandId, callbackData.FilePathName, byteOffset, length,
                 callbackData.DataStreamId, contentId, providerId,
@@ -1713,7 +1720,7 @@ public class VirtualizationInstance : IVirtualizationInstance
         }
 
         internal static HResult PrjQueryFileName(
-            ref PrjCallbackData callbackData
+            in PrjCallbackData callbackData
         ) {
             if (callbackData.InstanceContext == 0) { return HResult.InternalError; }
             VirtualizationInstance instance = (VirtualizationInstance) ((GCHandle) callbackData.InstanceContext).Target!;
@@ -1723,10 +1730,10 @@ public class VirtualizationInstance : IVirtualizationInstance
         }
 
         internal static HResult PrjNotification(
-            ref PrjCallbackData callbackData,
+            in PrjCallbackData callbackData,
             bool isDirectory,
             PrjNotification notification,
-            string destinationFileName,
+            string? destinationFileName,
             ref PrjNotificationParameters notificationParameters
         ) {
             if (callbackData.InstanceContext == 0) { return HResult.InternalError; }
@@ -1844,7 +1851,7 @@ public class VirtualizationInstance : IVirtualizationInstance
         }
 
         internal static void PrjCancelCommand(
-            ref PrjCallbackData callbackData
+            in PrjCallbackData callbackData
         ) {
             if (callbackData.InstanceContext == 0) { return; }
             VirtualizationInstance instance = (VirtualizationInstance) ((GCHandle) callbackData.InstanceContext).Target!;
@@ -1855,22 +1862,22 @@ public class VirtualizationInstance : IVirtualizationInstance
         }
 
         internal static HResult PrjGetPlaceholderInformation(
-            ref PrjCallbackData callbackData,
+            in PrjCallbackData callbackData,
             uint desiredAccess,
             uint shareMode,
             uint createDisposition,
             uint createOptions,
             string destinationFileName
-        ) => PrjGetPlaceholderInfo(ref callbackData);
+        ) => PrjGetPlaceholderInfo(in callbackData);
 
         internal static HResult PrjGetFileStream(
-            ref PrjCallbackData callbackData,
+            in PrjCallbackData callbackData,
             long byteOffset,
             uint length
-        ) => PrjGetFileData(ref callbackData, (uint) byteOffset, length);
+        ) => PrjGetFileData(in callbackData, (ulong) byteOffset, length);
 
         internal static HResult PrjNotifyOperation(
-            ref PrjCallbackData callbackData,
+            in PrjCallbackData callbackData,
             bool isDirectory,
             PrjNotification notificationType,
             string destinationFileName,
@@ -1881,7 +1888,7 @@ public class VirtualizationInstance : IVirtualizationInstance
                 notificationParameters.FileDeletedOnHandleClose.IsFileModified = operationParameters.FileDeletedOnHandleClose.IsFileModified;
             }
 
-            HResult result = PrjNotification(ref callbackData, isDirectory, notificationType, destinationFileName, ref notificationParameters);
+            HResult result = PrjNotification(in callbackData, isDirectory, notificationType, destinationFileName, ref notificationParameters);
 
             switch (notificationType) {
                 case ProjectedFSLib.PrjNotification.FileOpened:
@@ -1916,35 +1923,6 @@ public class VirtualizationInstance : IVirtualizationInstance
 
     #region Helper methods
 
-    private static unsafe void SetUpPlaceholderVersionInfo(ref PrjPlaceholderVersionInfo versionInfo, byte[] contentId, byte[] providerId)
-    {
-        fixed (byte* providerSrc = providerId) fixed (byte* providerDst = versionInfo.ProviderId) {
-            Buffer.MemoryCopy(providerSrc, providerDst, PrjPlaceholderId.Length, PrjPlaceholderId.Length);
-        }
-        fixed (byte* contentSrc = contentId) fixed (byte* contentDst = versionInfo.ContentId) {
-            Buffer.MemoryCopy(contentSrc, contentDst, PrjPlaceholderId.Length, PrjPlaceholderId.Length);
-        }
-    }
-    private static unsafe bool UnpackPlaceholderVersionInfo(nint versionInfoPtr, out byte[] contentId, out byte[] providerId)
-    {
-        if (versionInfoPtr == 0) {
-            contentId = providerId = [];
-            return false;
-        }
-
-        providerId = new byte[PrjPlaceholderId.Length];
-        fixed (byte* providerDst = providerId) {
-            byte* providerSrc = (byte*) versionInfoPtr;
-            Buffer.MemoryCopy(providerSrc, providerDst, PrjPlaceholderId.Length, PrjPlaceholderId.Length);
-        }
-        contentId = new byte[PrjPlaceholderId.Length];
-        fixed (byte* contentDst = contentId) {
-            byte* contentSrc = (byte*) (versionInfoPtr + PrjPlaceholderId.Length);
-            Buffer.MemoryCopy(contentSrc, contentDst, PrjPlaceholderId.Length, PrjPlaceholderId.Length);
-        }
-        return true;
-    }
-
     private static PrjPlaceholderInformation CreatePlaceholderInfomation(
         DateTime creationTime,
         DateTime lastAccessTime,
@@ -1957,14 +1935,13 @@ public class VirtualizationInstance : IVirtualizationInstance
         byte[] providerId
     ) {
         PrjPlaceholderInformation placeholderInfo = default;
-        placeholderInfo.Size = PrjPlaceholderInformation.StructSize;
 
         placeholderInfo.FileBasicInfo.IsDirectory = directory;
         placeholderInfo.FileBasicInfo.FileSize = endOfFile;
-        placeholderInfo.FileBasicInfo.CreationTime  .QuadPart = creationTime  .ToFileTime();
-        placeholderInfo.FileBasicInfo.LastAccessTime.QuadPart = lastAccessTime.ToFileTime();
-        placeholderInfo.FileBasicInfo.LastWriteTime .QuadPart = lastWriteTime .ToFileTime();
-        placeholderInfo.FileBasicInfo.ChangeTime    .QuadPart = changeTime    .ToFileTime();
+        placeholderInfo.FileBasicInfo.CreationTime   = creationTime  .ToFileTime();
+        placeholderInfo.FileBasicInfo.LastAccessTime = lastAccessTime.ToFileTime();
+        placeholderInfo.FileBasicInfo.LastWriteTime  = lastWriteTime .ToFileTime();
+        placeholderInfo.FileBasicInfo.ChangeTime     = changeTime    .ToFileTime();
         placeholderInfo.FileBasicInfo.FileAttributes = (uint) fileAttributes;
 
         placeholderInfo.EaInformation.EaBufferSize = 0;
@@ -1976,7 +1953,9 @@ public class VirtualizationInstance : IVirtualizationInstance
         placeholderInfo.StreamsInformation.SteamsInfoBufferSize = 0;
         placeholderInfo.StreamsInformation.OffsetToFirstStreamInfo = uint.MaxValue;
 
-        SetUpPlaceholderVersionInfo(ref placeholderInfo.VersionInfo, contentId, providerId);
+        placeholderInfo.VersionInfo.ProviderId = providerId;
+        placeholderInfo.VersionInfo.ContentId  = contentId;
+
         return placeholderInfo;
     }
     private static PrjPlaceholderInfo CreatePlaceholderInfo(
@@ -1994,13 +1973,15 @@ public class VirtualizationInstance : IVirtualizationInstance
 
         placeholderInfo.FileBasicInfo.IsDirectory = directory;
         placeholderInfo.FileBasicInfo.FileSize = endOfFile;
-        placeholderInfo.FileBasicInfo.CreationTime  .QuadPart = creationTime  .ToFileTime();
-        placeholderInfo.FileBasicInfo.LastAccessTime.QuadPart = lastAccessTime.ToFileTime();
-        placeholderInfo.FileBasicInfo.LastWriteTime .QuadPart = lastWriteTime .ToFileTime();
-        placeholderInfo.FileBasicInfo.ChangeTime    .QuadPart = changeTime    .ToFileTime();
+        placeholderInfo.FileBasicInfo.CreationTime   = creationTime  .ToFileTime();
+        placeholderInfo.FileBasicInfo.LastAccessTime = lastAccessTime.ToFileTime();
+        placeholderInfo.FileBasicInfo.LastWriteTime  = lastWriteTime .ToFileTime();
+        placeholderInfo.FileBasicInfo.ChangeTime     = changeTime    .ToFileTime();
         placeholderInfo.FileBasicInfo.FileAttributes = (uint) fileAttributes;
 
-        SetUpPlaceholderVersionInfo(ref placeholderInfo.VersionInfo, contentId, providerId);
+        placeholderInfo.VersionInfo.ProviderId = providerId;
+        placeholderInfo.VersionInfo.ContentId  = contentId;
+
         return placeholderInfo;
     }
 

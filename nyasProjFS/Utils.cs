@@ -24,7 +24,7 @@ public sealed class Utils
     /// <returns>
     /// <c>false</c> if <paramref name="fullPath"/> does not exist.
     /// </returns>
-    public static bool TryGetOnDiskFileState(string fullPath, out OnDiskFileState fileState) => ApiHelper.PrjGetOnDiskFileState(fullPath, out fileState).IsSuccess();
+    public static bool TryGetOnDiskFileState(string fullPath, out OnDiskFileState fileState) => ProjectedFSLib.Api.PrjGetOnDiskFileState(fullPath, out fileState).IsSuccess();
 
     /// <summary>
     /// Determines whether a file name string matches a pattern, potentially containing
@@ -40,7 +40,7 @@ public sealed class Utils
     /// <param name="pattern">The pattern for which to search.</param>
     /// <returns><c>true</c> if <paramref name="fileNameToCheck"/> matches <paramref name="pattern"/>,
     /// <c>false</c> otherwise.</returns>
-    public static bool IsFileNameMatch(string fileNameToCheck, string pattern) => ApiHelper.PrjFileNameMatch(fileNameToCheck, pattern);
+    public static bool IsFileNameMatch(string fileNameToCheck, string pattern) => ProjectedFSLib.Api.PrjFileNameMatch(fileNameToCheck, pattern);
 
     /// <summary>
     /// Compares two file names and returns a value that indicates their relative collation order.
@@ -56,7 +56,7 @@ public sealed class Utils
     /// <para>0 if <paramref name="fileName1"/> is equal to <paramref name="fileName2"/>.</para>
     /// <para>A positive number if <paramref name="fileName1"/> is after <paramref name="fileName2"/> in collation order.</para>
     /// </returns>
-    public static int FileNameCompare(string fileName1, string fileName2) => ApiHelper.PrjFileNameCompare(fileName1, fileName2);
+    public static int FileNameCompare(string fileName1, string fileName2) => ProjectedFSLib.Api.PrjFileNameCompare(fileName1, fileName2);
 
     /// <summary>Determines whether a string contains any wildcard characters.</summary>
     /// <remarks>
@@ -97,5 +97,5 @@ public sealed class Utils
     /// <param name="fileName">A string to check for wildcard characters.</param>
     /// <returns><c>true</c> if <paramref name="fileName"/> contains any wildcard characters,
     /// <c>false</c> otherwise.</returns>
-    public static bool DoesNameContainWildCards(string fileName) => ApiHelper.PrjDoesNameContainWildCards(fileName);
+    public static bool DoesNameContainWildCards(string fileName) => ProjectedFSLib.Api.PrjDoesNameContainWildCards(fileName);
 }

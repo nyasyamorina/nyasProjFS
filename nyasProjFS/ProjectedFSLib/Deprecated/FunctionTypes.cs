@@ -1,18 +1,17 @@
 using System.Runtime.InteropServices;
-using nyasProjFS.ProjectedFSLib;
 
-namespace nyasProjFS.ProjectedFSLib_Deprecated;
+namespace nyasProjFS.ProjectedFSLib.Deprecated;
 
 using PrjVirtualizationInstanceHandle = nint;
 
-public static class FunctionTypes
+internal static class FunctionTypes
 {
     #region Virtualization instance APIs
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     [Obsolete("use PrjStartVirtualizing instead of PrjStartVirtualizationInstance")]
-    public delegate HResult PrjStartVirtualizationInstance(
-        [MarshalAs(UnmanagedType.LPTStr)] string virtualizationRootPath,
+    internal delegate HResult PrjStartVirtualizationInstance(
+        [MarshalAs(UnmanagedType.LPWStr)] string virtualizationRootPath,
         ref PrjCommandCallbacks callbacks,
         uint flags,
         uint globalNotificationMask,
@@ -24,8 +23,8 @@ public static class FunctionTypes
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     [Obsolete("use PrjStartVirtualizing instead of PrjStartVirtualizationInstanceEx")]
-    public delegate HResult PrjStartVirtualizationInstanceEx(
-        [MarshalAs(UnmanagedType.LPTStr)] string virtualizationRootPath,
+    internal delegate HResult PrjStartVirtualizationInstanceEx(
+        [MarshalAs(UnmanagedType.LPWStr)] string virtualizationRootPath,
         ref PrjCommandCallbacks callbacks,
         nint instanceContext,
         ref VirtualizationInstExtendedParameters extendedParameters,
@@ -34,13 +33,13 @@ public static class FunctionTypes
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     [Obsolete("use PrjStopVirtualizing instead of PrjStopVirtualizationInstance")]
-    public delegate HResult PrjStopVirtualizationInstance(
+    internal delegate HResult PrjStopVirtualizationInstance(
         PrjVirtualizationInstanceHandle virtualizationInstanceHandle
     );
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     [Obsolete("use PrjGetVirtualizationInstanceInfo instead of PrjGetVirtualizationInstanceIdFromHandle")]
-    public delegate HResult PrjGetVirtualizationInstanceIdFromHandle(
+    internal delegate HResult PrjGetVirtualizationInstanceIdFromHandle(
         PrjVirtualizationInstanceHandle virtualizationInstanceHandle,
         out Guid virtualizationInstanceId
     );
@@ -50,9 +49,9 @@ public static class FunctionTypes
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     [Obsolete("use PrjMarkDirectoryAsPlaceholder instead of PrjConvertDirectoryToPlaceholder")]
-    public delegate HResult PrjConvertDirectoryToPlaceholder(
-        [MarshalAs(UnmanagedType.LPTStr)] string rootPathName,
-        [MarshalAs(UnmanagedType.LPTStr)] string targetPathName,
+    internal delegate HResult PrjConvertDirectoryToPlaceholder(
+        [MarshalAs(UnmanagedType.LPWStr)] string rootPathName,
+        [MarshalAs(UnmanagedType.LPWStr)] string targetPathName,
         ref PrjPlaceholderVersionInfo versionInfo,
         uint flags,
         ref Guid virtualizationInstanceId
@@ -60,18 +59,18 @@ public static class FunctionTypes
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     [Obsolete("use PrjWritePlaceholderInfo instead of PrjWritePlaceholderInformation")]
-    public delegate HResult PrjWritePlaceholderInformation(
+    internal delegate HResult PrjWritePlaceholderInformation(
         PrjVirtualizationInstanceHandle virtualizationInstanceHandle,
-        [MarshalAs(UnmanagedType.LPTStr)] string destinationFileName,
+        [MarshalAs(UnmanagedType.LPWStr)] string destinationFileName,
         ref PrjPlaceholderInformation placeholderInformation,
         uint length
     );
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     [Obsolete("use PrjUpdateFileIfNeeded instead of PrjUpdatePlaceholderIfNeeded")]
-    public delegate HResult PrjUpdatePlaceholderIfNeeded(
+    internal delegate HResult PrjUpdatePlaceholderIfNeeded(
         PrjVirtualizationInstanceHandle virtualizationInstanceHandle,
-        [MarshalAs(UnmanagedType.LPTStr)] string destinationFileName,
+        [MarshalAs(UnmanagedType.LPWStr)] string destinationFileName,
         ref PrjPlaceholderInformation placeholderInformation,
         uint length,
         UpdateType updateFlags,
@@ -80,7 +79,7 @@ public static class FunctionTypes
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     [Obsolete("Use PrjWriteFileData instead of PrjWriteFile")]
-    public delegate HResult PrjWriteFile(
+    internal delegate HResult PrjWriteFile(
         PrjVirtualizationInstanceHandle virtualizationInstanceHandle,
         ref Guid streamId,
         nint buffer,
@@ -93,7 +92,7 @@ public static class FunctionTypes
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     [Obsolete("PrjCommandCallbacksInit is deprecated and will not exist in future versions of Windows")]
-    public delegate HResult PrjCommandCallbacksInit(
+    internal delegate HResult PrjCommandCallbacksInit(
         uint callbackSize,
         out PrjCommandCallbacks callbacks
     );

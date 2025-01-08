@@ -4,56 +4,56 @@ namespace nyasProjFS.ProjectedFSLib;
 
 using PrjDirEntryBufferHandle = nint;
 
-public static class CallbackTypes
+internal static class CallbackTypes
 {
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate HResult PrjStartDirectoryEnumeration(
-        ref PrjCallbackData callbackData,
-        ref Guid enumerationId
+    internal delegate HResult PrjStartDirectoryEnumeration(
+        in PrjCallbackData callbackData,
+        in Guid enumerationId
     );
 
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate HResult PrjGetDirectoryEnumeration(
-        ref PrjCallbackData callbackData,
-        ref Guid enumerationId,
-        [MarshalAs(UnmanagedType.LPTStr)] string searchExpression,
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
+    internal delegate HResult PrjGetDirectoryEnumeration(
+        in PrjCallbackData callbackData,
+        in Guid enumerationId,
+        string? searchExpression,
         PrjDirEntryBufferHandle dirEntryBufferHandle
     );
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate HResult PrjEndDirectoryEnumeration(
-        ref PrjCallbackData callbackData,
-        ref Guid enumerationId
+    internal delegate HResult PrjEndDirectoryEnumeration(
+        in PrjCallbackData callbackData,
+        in Guid enumerationId
     );
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate HResult PrjGetPlaceholderInfo(
-        ref PrjCallbackData callbackData
+    internal delegate HResult PrjGetPlaceholderInfo(
+        in PrjCallbackData callbackData
     );
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate HResult PrjGetFileData(
-        ref PrjCallbackData callbackData,
+    internal delegate HResult PrjGetFileData(
+        in PrjCallbackData callbackData,
         ulong byteOffset,
         uint length
     );
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate HResult PrjQueryFileName(
-        ref PrjCallbackData callbackData
+    internal delegate HResult PrjQueryFileName(
+        in PrjCallbackData callbackData
     );
 
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate HResult PrjNotification(
-        ref PrjCallbackData callbackData,
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
+    internal delegate HResult PrjNotification(
+        in PrjCallbackData callbackData,
         [MarshalAs(UnmanagedType.I1)] bool isDirectory,
         ProjectedFSLib.PrjNotification notification,
-        [MarshalAs(UnmanagedType.LPTStr)] string destinationFileName,
+        string? destinationFileName,
         ref PrjNotificationParameters notificationParameters
     );
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void PrjCancelCommand(
-        ref PrjCallbackData callbackData
+    internal delegate void PrjCancelCommand(
+        in PrjCallbackData callbackData
     );
 }

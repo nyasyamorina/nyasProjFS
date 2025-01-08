@@ -1,7 +1,7 @@
 namespace nyasProjFS.ProjectedFSLib;
 
 [Flags]
-public enum PrjStartVirtualizingFlags : int {
+internal enum PrjStartVirtualizingFlags : int {
     None = 0,
     UseNegativePathCache = 1,
 }

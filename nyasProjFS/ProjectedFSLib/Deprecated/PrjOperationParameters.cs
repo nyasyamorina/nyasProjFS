@@ -1,12 +1,17 @@
 using System.Runtime.InteropServices;
 
-namespace nyasProjFS.ProjectedFSLib;
+namespace nyasProjFS.ProjectedFSLib.Deprecated;
 
-[StructLayout(LayoutKind.Explicit, Size = 4)]
-internal struct PrjNotificationParameters
+[StructLayout(LayoutKind.Explicit, Size = 24)]
+internal struct PrjOperationParameters
 {
     internal struct PostCreateType
     {
+        internal uint DesiredAccess;
+        internal uint ShareMode;
+        internal uint CreateDisposition;
+        internal uint CreateOptions;
+        internal uint IoStatusInformation;
         internal NotificationType NotificationMask;
     }
     internal struct FileRenamedType

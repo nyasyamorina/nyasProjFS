@@ -1,31 +1,64 @@
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.Marshalling;
 
 namespace nyasProjFS.ProjectedFSLib;
 
-public unsafe struct PrjPlaceholderInfo
+[NativeMarshalling(typeof(PrjPlaceholderInfoMarshaller))]
+internal struct PrjPlaceholderInfo
 {
-    public static uint StructSize { get; } = (uint) Marshal.SizeOf<PrjPlaceholderInfo>();
+    internal static uint StructSize { get; } = (uint) Marshal.SizeOf<PrjPlaceholderInfoUnmanaged>();
 
-    public struct EaInformationType
+    internal struct EaInformationType
     {
-        public uint EaBufferSize;
-        public uint OffsetToFirstEa;
+        internal uint EaBufferSize;
+        internal uint OffsetToFirstEa;
     }
-    public struct SecurityInformationType
+    internal struct SecurityInformationType
     {
-        public uint SecurityBufferSize;
-        public uint OffsetToSecurityDescriptor;
+        internal uint SecurityBufferSize;
+        internal uint OffsetToSecurityDescriptor;
     }
-    public struct StreamsInformationType
+    internal struct StreamsInformationType
     {
-        public uint StreamsInfoBufferSize;
-        public uint OffsetToFirstStreamInfo;
+        internal uint StreamsInfoBufferSize;
+        internal uint OffsetToFirstStreamInfo;
     }
 
-    public PrjFileBasicInfo FileBasicInfo;
-    public EaInformationType EaInformation;
-    public SecurityInformationType SecurityInformation;
-    public StreamsInformationType StreamsInformation;
-    public PrjPlaceholderVersionInfo VersionInfo;
-    public fixed byte VariableData[1];
+    internal PrjFileBasicInfo FileBasicInfo;
+    internal EaInformationType EaInformation;
+    internal SecurityInformationType SecurityInformation;
+    internal StreamsInformationType StreamsInformation;
+    internal PrjPlaceholderVersionInfo VersionInfo;
+    internal byte[] VariableData;
+}
+
+// ?? `MarshalAs` is not working with `LibraryImport` ??
+
+internal unsafe struct PrjPlaceholderInfoUnmanaged
+{
+    internal PrjFileBasicInfoUnmanaged FileBasicInfo;
+    internal PrjPlaceholderInfo.EaInformationType EaInformation;
+    internal PrjPlaceholderInfo.SecurityInformationType SecurityInformation;
+    internal PrjPlaceholderInfo.StreamsInformationType StreamsInformation;
+    internal PrjPlaceholderVersionInfoUnmanaged VersionInfo;
+    internal fixed byte VariableData[1];
+}
+
+[CustomMarshaller(typeof(PrjPlaceholderInfo), MarshalMode.ManagedToUnmanagedIn, typeof(PrjPlaceholderInfoMarshaller))]
+internal static class PrjPlaceholderInfoMarshaller
+{
+    internal static unsafe PrjPlaceholderInfoUnmanaged ConvertToUnmanaged(in PrjPlaceholderInfo managed)
+    {
+        PrjFileBasicInfoUnmanaged fileBasicInfo = PrjFileBasicInfoMarshaller.ConvertToUnmanaged(managed.FileBasicInfo);
+        PrjPlaceholderVersionInfoUnmanaged versionInfo = PrjPlaceholderVersionInfoMarshaller.ConvertToUnmanaged(managed.VersionInfo);
+
+        PrjPlaceholderInfoUnmanaged unmanaged = default;
+        unmanaged.FileBasicInfo = fileBasicInfo;
+        unmanaged.EaInformation = managed.EaInformation;
+        unmanaged.SecurityInformation = managed.SecurityInformation;
+        unmanaged.StreamsInformation = managed.StreamsInformation;
+        unmanaged.VersionInfo = versionInfo;
+        unmanaged.VariableData[0] = managed.VariableData.ElementAtOrDefault(0);
+        return unmanaged;
+    }
 }
