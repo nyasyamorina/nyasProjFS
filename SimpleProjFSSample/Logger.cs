@@ -71,7 +71,8 @@ public static class Logger
     {
         DateTime startTime = DateTime.Now;
         string logDir = Path.Combine(AppContext.BaseDirectory, "Log");
-        string logPath = Path.Join(logDir, $"{startTime:yyMMdd-HHmmss}.log");
+        Guid loggerFileGuid = Guid.NewGuid();
+        string logPath = Path.Join(logDir, $"{startTime:yyMMdd-HHmmss}+{loggerFileGuid}.log");
 
         if (!Directory.Exists(logDir)) { Directory.CreateDirectory(logDir); }
         s_logFileStream = File.Create(logPath);

@@ -1,6 +1,7 @@
 ﻿using Microsoft.Win32.SafeHandles;
 using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -212,7 +213,7 @@ public static partial class FileSystemApi
         return res > 0 && lastError == NativeIOConstants.ErrorSuccess;
     }
 
-    public static bool TryGetReparsePointTarget(string source, out string? target)
+    public static bool TryGetReparsePointTarget(string source, [NotNullWhen(true)] out string? target)
     {
         target = null;
         using SafeFileHandle handle = CreateFileW(

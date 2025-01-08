@@ -47,7 +47,7 @@ internal static class PrjFileBasicInfoMarshaller
         PrjFileBasicInfoUnmanaged unmanaged = default;
         unmanaged.IsDirectory = managed.IsDirectory ? byte.MaxValue : (byte) 0;
         unmanaged.FileSize = managed.FileSize;
-        unmanaged.CreationTime.QuadPart = managed.ChangeTime;
+        unmanaged.CreationTime.QuadPart = managed.CreationTime;
         unmanaged.LastAccessTime.QuadPart = managed.LastAccessTime;
         unmanaged.LastWriteTime.QuadPart = managed.LastWriteTime;
         unmanaged.ChangeTime.QuadPart = managed.ChangeTime;

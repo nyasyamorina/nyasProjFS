@@ -25,6 +25,7 @@ internal static partial class Api
         namespaceVirtualizationContext = default;
         PrjStartVirtualizingOptionsUnmanaged __options_native = default;
         PrjStartVirtualizingOptionsUnmanaged* optionsPtr = null;
+        PrjCallbacksUnmanaged __callbacks_native = default;
         HResult __retVal = default;
         try
         {
@@ -33,12 +34,12 @@ internal static partial class Api
                 __options_native = PrjStartVirtualizingOptionsMarsheller.ConvertToUnmanaged(options.Value);
                 optionsPtr = &__options_native;
             }
+            __callbacks_native = PrjCallbacksMarshaller.ConvertToUnmanaged(in callbacks);
             // Pin - Pin data in preparation for calling the P/Invoke.
             fixed (nint* __namespaceVirtualizationContext_native = &namespaceVirtualizationContext)
-            fixed (PrjCallbacks* __callbacks_native = &callbacks)
             fixed (void* __virtualizationRootPath_native = &Utf16StringMarshaller.GetPinnableReference(virtualizationRootPath))
             {
-                __retVal = __PInvoke((ushort*)__virtualizationRootPath_native, __callbacks_native, instanceContext, optionsPtr, __namespaceVirtualizationContext_native);
+                __retVal = __PInvoke((ushort*)__virtualizationRootPath_native, &__callbacks_native, instanceContext, optionsPtr, __namespaceVirtualizationContext_native);
             }
         }
         finally
@@ -50,7 +51,7 @@ internal static partial class Api
         return __retVal;
         // Local P/Invoke
         [DllImport("ProjectedFSLib.dll", EntryPoint = "PrjStartVirtualizing", ExactSpelling = true)]
-        static extern unsafe HResult __PInvoke(ushort* __virtualizationRootPath_native, PrjCallbacks* __callbacks_native, nint __instanceContext_native, PrjStartVirtualizingOptionsUnmanaged* __options_native, nint* __namespaceVirtualizationContext_native);
+        static extern unsafe HResult __PInvoke(ushort* __virtualizationRootPath_native, PrjCallbacksUnmanaged* __callbacks_native, nint __instanceContext_native, PrjStartVirtualizingOptionsUnmanaged* __options_native, nint* __namespaceVirtualizationContext_native);
     }
 
     [LibraryImport("ProjectedFSLib.dll")]

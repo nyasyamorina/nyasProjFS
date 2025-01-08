@@ -8,6 +8,8 @@ using static nyasProjFS.ProjectedFSLib.Api;
 using static nyasProjFS.ProjectedFSLib.Deprecated.Api;
 using static nyasProjFS.CallbackDelegates;
 using static nyasProjFS.Win32Native;
+using System.Runtime.InteropServices.Marshalling;
+using System.Diagnostics;
 
 namespace nyasProjFS;
 
@@ -508,18 +510,18 @@ public class VirtualizationInstance : IVirtualizationInstance
         _virtualizationContextGc = (nint) GCHandle.Alloc(this);
 
         HResult startResult = HResult.Ok;
-        if (ApiHelper.UseBetaApi) {
+        if (ApiHelper.UseBetaApi) unsafe {
             FindBytesPerSectorAndAlignment();
 
             PrjCommandCallbacksInit(PrjCommandCallbacks.StructSize, out PrjCommandCallbacks callbacks);
-            callbacks.PrjStartDirectoryEnumeration = DefaultCallbacks.PrjStartDirectoryEnumeration;
-            callbacks.PrjEndDirectoryEnumeration   = DefaultCallbacks.PrjEndDirectoryEnumeration;
-            callbacks.PrjGetDirectoryEnumeration   = DefaultCallbacks.PrjGetDirectoryEnumeration;
-            callbacks.PrjGetPlaceholderInformation = DefaultCallbacks.PrjGetPlaceholderInformation;
-            callbacks.PrjGetFileStream             = DefaultCallbacks.PrjGetFileStream;
-            if (OnQueryFileName is not null) { callbacks.PrjQueryFileName   = DefaultCallbacks.PrjQueryFileName  ; }
-            if (OnCancelCommand is not null) { callbacks.PrjCancelCommand   = DefaultCallbacks.PrjCancelCommand  ; }
-            if (AnyNotifyCallback())         { callbacks.PrjNotifyOperation = DefaultCallbacks.PrjNotifyOperation; }
+            callbacks.StartDirectoryEnumerationCallback = DefaultCallbacks.Underlying.PrjStartDirectoryEnumeration;
+            callbacks.EndDirectoryEnumerationCallback   = DefaultCallbacks.Underlying.PrjEndDirectoryEnumeration;
+            callbacks.GetDirectoryEnumerationCallback   = DefaultCallbacks.Underlying.PrjGetDirectoryEnumeration;
+            callbacks.GetPlaceholderInformationCallback = DefaultCallbacks.Underlying.PrjGetPlaceholderInformation;
+            callbacks.GetFileStreamCallback             = DefaultCallbacks.Underlying.PrjGetFileStream;
+            if (OnQueryFileName is not null) { callbacks.QueryFileNameCallback   = DefaultCallbacks.Underlying.PrjQueryFileName  ; }
+            if (OnCancelCommand is not null) { callbacks.CancelCommandCallback   = DefaultCallbacks.Underlying.PrjCancelCommand  ; }
+            if (AnyNotifyCallback())         { callbacks.NotifyOperationCallback = DefaultCallbacks.Underlying.PrjNotifyOperation; }
 
             const uint PrjFlagInstanceNegativePathCache = 2;
             VirtualizationInstExtendedParameters extendedParameters = default;
@@ -554,16 +556,16 @@ public class VirtualizationInstance : IVirtualizationInstance
                 );
             }
         }
-        else {
+        else unsafe {
             PrjCallbacks callbacks = default;
-            callbacks.StartDirectoryEnumerationCallback = DefaultCallbacks.PrjStartDirectoryEnumeration;
-            callbacks.EndDirectoryEnumerationCallback   = DefaultCallbacks.PrjEndDirectoryEnumeration;
-            callbacks.GetDirectoryEnumerationCallback   = DefaultCallbacks.PrjGetDirectoryEnumeration;
-            callbacks.GetPlaceholderInfoCallback        = DefaultCallbacks.PrjGetPlaceholderInfo;
-            callbacks.GetFileDataCallback               = DefaultCallbacks.PrjGetFileData;
-            if (OnQueryFileName is not null) { callbacks.QueryFileNameCallback = DefaultCallbacks.PrjQueryFileName; }
-            if (OnCancelCommand is not null) { callbacks.CancelCommandCallback = DefaultCallbacks.PrjCancelCommand; }
-            if (AnyNotifyCallback())         { callbacks.NotificationCallback = DefaultCallbacks.PrjNotification; }
+            callbacks.StartDirectoryEnumerationCallback = DefaultCallbacks.Underlying.PrjStartDirectoryEnumeration;
+            callbacks.EndDirectoryEnumerationCallback   = DefaultCallbacks.Underlying.PrjEndDirectoryEnumeration;
+            callbacks.GetDirectoryEnumerationCallback   = DefaultCallbacks.Underlying.PrjGetDirectoryEnumeration;
+            callbacks.GetPlaceholderInfoCallback        = DefaultCallbacks.Underlying.PrjGetPlaceholderInfo;
+            callbacks.GetFileDataCallback               = DefaultCallbacks.Underlying.PrjGetFileData;
+            if (OnQueryFileName is not null) { callbacks.QueryFileNameCallback = DefaultCallbacks.Underlying.PrjQueryFileName; }
+            if (OnCancelCommand is not null) { callbacks.CancelCommandCallback = DefaultCallbacks.Underlying.PrjCancelCommand; }
+            if (AnyNotifyCallback())         { callbacks.NotificationCallback = DefaultCallbacks.Underlying.PrjNotification; }
 
             PrjStartVirtualizingOptions startOptions = default;
             startOptions.Flags = _enableNegativePathCache ? PrjStartVirtualizingFlags.UseNegativePathCache : PrjStartVirtualizingFlags.None;
@@ -1632,7 +1634,6 @@ public class VirtualizationInstance : IVirtualizationInstance
 
     // We keep a GC handle to the VirtualizationInstance object to pass through ProjFS as the instance context.
     private nint _virtualizationContextGc = 0;
-    //private gcroot<VirtualizationInstance>* _virtualizationContextGc = nullptr;
 
     // Variables to support aligned I/O in Windows 10 version 1803.
     private uint _bytesPerSector;
@@ -1645,6 +1646,153 @@ public class VirtualizationInstance : IVirtualizationInstance
 
     private static class DefaultCallbacks
     {
+        internal static unsafe class Underlying
+        {
+            internal static HResult PrjStartDirectoryEnumeration(
+                PrjCallbackDataUnmanaged* callbackData,
+                Guid* enumerationId
+            ) {
+                ref PrjCallbackDataUnmanaged callbackDataUnmanaged = ref Unsafe.AsRef<PrjCallbackDataUnmanaged>(callbackData);
+                ref Guid enumerationId1 = ref Unsafe.AsRef<Guid>(enumerationId);
+
+                PrjCallbackData callbackDataManaged = PrjCallbackDataMarsheller.ConvertToManaged(in callbackDataUnmanaged);
+
+                return DefaultCallbacks.PrjStartDirectoryEnumeration(in callbackDataManaged, in enumerationId1);
+            }
+
+            internal static HResult PrjGetDirectoryEnumeration(
+                PrjCallbackDataUnmanaged* callbackData,
+                Guid* enumerationId,
+                ushort* searchExpression,
+                PrjDirEntryBufferHandle dirEntryBufferHandle
+            ) {
+                ref PrjCallbackDataUnmanaged callbackDataUnmanaged = ref Unsafe.AsRef<PrjCallbackDataUnmanaged>(callbackData);
+                ref Guid enumerationId1 = ref Unsafe.AsRef<Guid>(enumerationId);
+
+                PrjCallbackData callbackDataManaged = PrjCallbackDataMarsheller.ConvertToManaged(in callbackDataUnmanaged);
+                string? searchExpression1 = Utf16StringMarshaller.ConvertToManaged(searchExpression);
+
+                return DefaultCallbacks.PrjGetDirectoryEnumeration(in callbackDataManaged, in enumerationId1, searchExpression1, dirEntryBufferHandle);
+            }
+
+            internal static HResult PrjEndDirectoryEnumeration(
+                PrjCallbackDataUnmanaged* callbackData,
+                Guid* enumerationId
+            ) {
+                ref PrjCallbackDataUnmanaged callbackDataUnmanaged = ref Unsafe.AsRef<PrjCallbackDataUnmanaged>(callbackData);
+                ref Guid enumerationId1 = ref Unsafe.AsRef<Guid>(enumerationId);
+
+                PrjCallbackData callbackDataManaged = PrjCallbackDataMarsheller.ConvertToManaged(in callbackDataUnmanaged);
+
+                return DefaultCallbacks.PrjEndDirectoryEnumeration(in callbackDataManaged, in enumerationId1);
+            }
+
+            internal static HResult PrjGetPlaceholderInfo(
+                PrjCallbackDataUnmanaged* callbackData
+            ) {
+                ref PrjCallbackDataUnmanaged callbackDataUnmanaged = ref Unsafe.AsRef<PrjCallbackDataUnmanaged>(callbackData);
+
+                PrjCallbackData callbackDataManaged = PrjCallbackDataMarsheller.ConvertToManaged(in callbackDataUnmanaged);
+
+                return DefaultCallbacks.PrjGetPlaceholderInfo(in callbackDataManaged);
+            }
+
+            internal static HResult PrjGetFileData(
+                PrjCallbackDataUnmanaged* callbackData,
+                ulong byteOffset,
+                uint length
+            ) {
+                ref PrjCallbackDataUnmanaged callbackDataUnmanaged = ref Unsafe.AsRef<PrjCallbackDataUnmanaged>(callbackData);
+
+                PrjCallbackData callbackDataManaged = PrjCallbackDataMarsheller.ConvertToManaged(in callbackDataUnmanaged);
+
+                return DefaultCallbacks.PrjGetFileData(in callbackDataManaged, byteOffset, length);
+            }
+
+            internal static HResult PrjQueryFileName(
+                PrjCallbackDataUnmanaged* callbackData
+            ) {
+                ref PrjCallbackDataUnmanaged callbackDataUnmanaged = ref Unsafe.AsRef<PrjCallbackDataUnmanaged>(callbackData);
+
+                PrjCallbackData callbackDataManaged = PrjCallbackDataMarsheller.ConvertToManaged(in callbackDataUnmanaged);
+
+                return DefaultCallbacks.PrjQueryFileName(in callbackDataManaged);
+            }
+
+            internal static HResult PrjNotification(
+                PrjCallbackDataUnmanaged* callbackData,
+                byte isDirectory,
+                PrjNotification notification,
+                ushort* destinationFileName,
+                PrjNotificationParameters* notificationParameters
+            ) {
+                ref PrjCallbackDataUnmanaged callbackDataUnmanaged = ref Unsafe.AsRef<PrjCallbackDataUnmanaged>(callbackData);
+                ref PrjNotificationParameters notificationParameters1 = ref Unsafe.AsRef<PrjNotificationParameters>(notificationParameters);
+
+                PrjCallbackData callbackDataManaged = PrjCallbackDataMarsheller.ConvertToManaged(in callbackDataUnmanaged);
+                string? destinationFileName1 = Utf16StringMarshaller.ConvertToManaged(destinationFileName);
+                bool isDirectory1 = isDirectory != 0;
+
+                return DefaultCallbacks.PrjNotification(in callbackDataManaged, isDirectory1, notification, destinationFileName1, ref notificationParameters1);
+            }
+
+            internal static void PrjCancelCommand(
+                PrjCallbackDataUnmanaged* callbackData
+            ) {
+                ref PrjCallbackDataUnmanaged callbackDataUnmanaged = ref Unsafe.AsRef<PrjCallbackDataUnmanaged>(callbackData);
+
+                PrjCallbackData callbackDataManaged = PrjCallbackDataMarsheller.ConvertToManaged(in callbackDataUnmanaged);
+
+                DefaultCallbacks.PrjCancelCommand(in callbackDataManaged);
+            }
+
+            internal static HResult PrjGetPlaceholderInformation(
+                PrjCallbackDataUnmanaged* callbackData,
+                uint desiredAccess,
+                uint shareMode,
+                uint createDisposition,
+                uint createOptions,
+                ushort* destinationFileName
+            ) {
+                ref PrjCallbackDataUnmanaged callbackDataUnmanaged = ref Unsafe.AsRef<PrjCallbackDataUnmanaged>(callbackData);
+
+                PrjCallbackData callbackDataManaged = PrjCallbackDataMarsheller.ConvertToManaged(in callbackDataUnmanaged);
+                string destinationFileName1 = Utf16StringMarshaller.ConvertToManaged(destinationFileName)
+                    ?? throw new ArgumentNullException(nameof(destinationFileName));
+
+                return DefaultCallbacks.PrjGetPlaceholderInformation(in callbackDataManaged, desiredAccess, shareMode, createDisposition, createOptions, destinationFileName1);
+            }
+
+            internal static HResult PrjGetFileStream(
+                PrjCallbackDataUnmanaged* callbackData,
+                long byteOffset,
+                uint length
+            ) {
+                ref PrjCallbackDataUnmanaged callbackDataUnmanaged = ref Unsafe.AsRef<PrjCallbackDataUnmanaged>(callbackData);
+
+                PrjCallbackData callbackDataManaged = PrjCallbackDataMarsheller.ConvertToManaged(in callbackDataUnmanaged);
+
+                return DefaultCallbacks.PrjGetFileStream(in callbackDataManaged, byteOffset, length);
+            }
+
+            internal static HResult PrjNotifyOperation(
+                PrjCallbackDataUnmanaged* callbackData,
+                byte isDirectory,
+                PrjNotification notificationType,
+                ushort* destinationFileName,
+                PrjOperationParameters* operationParameters
+            ) {
+                ref PrjCallbackDataUnmanaged callbackDataUnmanaged = ref Unsafe.AsRef<PrjCallbackDataUnmanaged>(callbackData);
+                ref PrjOperationParameters operationParameters1 = ref Unsafe.AsRef<PrjOperationParameters>(operationParameters);
+
+                PrjCallbackData callbackDataManaged = PrjCallbackDataMarsheller.ConvertToManaged(in callbackDataUnmanaged);
+                string? destinationFileName1 = Utf16StringMarshaller.ConvertToManaged(destinationFileName);
+                bool isDirectory1 = isDirectory != 0;
+
+                return DefaultCallbacks.PrjNotifyOperation(in callbackDataManaged, isDirectory1, notificationType, destinationFileName1, ref operationParameters1);
+            }
+        }
+
         internal static HResult PrjStartDirectoryEnumeration(
             in PrjCallbackData callbackData,
             in Guid enumerationId
@@ -1880,7 +2028,7 @@ public class VirtualizationInstance : IVirtualizationInstance
             in PrjCallbackData callbackData,
             bool isDirectory,
             PrjNotification notificationType,
-            string destinationFileName,
+            string? destinationFileName,
             ref PrjOperationParameters operationParameters
         ) {
             PrjNotificationParameters notificationParameters = default;
