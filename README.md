@@ -1,4 +1,4 @@
-# nyasProj
+# nyasProjFS
 
 A C# wrapper for [ProjFS](https://learn.microsoft.com/windows/win32/projfs/projected-file-system).
 
