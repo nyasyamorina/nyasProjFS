@@ -8,8 +8,8 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <OutputType>Exe</OutputType>
     <BaseOutputPath>..\BuildOutput</BaseOutputPath>
-	  <!-- <UseCommonOutputDirectory>true</UseCommonOutputDirectory> --> <!-- dependencies will not be compiled when this option is enabled -->
-    <SelfContained>True</SelfContained>
+	  <!-- <UseCommonOutputDirectory>true</UseCommonOutputDirectory> -->
+    <SelfContained>false</SelfContained>
   </PropertyGroup>
 
   <ItemGroup>

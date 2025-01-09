@@ -6,14 +6,16 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <OutputType>Exe</OutputType>
+    <StartupObject>SimpleProjFSSample.Test.Program</StartupObject>
     <BaseOutputPath>..\BuildOutput</BaseOutputPath>
 	  <!-- <UseCommonOutputDirectory>true</UseCommonOutputDirectory> -->
     <SelfContained>false</SelfContained>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CommandLineParser" Version="2.9.1" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageReference Include="NUnitLite" Version="4.3.2" />
+    <ProjectReference Include="..\SimpleProjFSSample\SimpleProjFSSample.csproj" />
   </ItemGroup>
 
 </Project>

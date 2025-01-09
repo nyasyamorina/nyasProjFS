@@ -6,6 +6,60 @@ using PrjDirEntryBufferHandle = nint;
 
 internal static class CallbackTypes
 {
+    internal static unsafe class Underlying
+    {
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        internal delegate HResult PrjStartDirectoryEnumeration(
+            PrjCallbackDataUnmanaged* callbackData,
+            Guid* enumerationId
+        );
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        internal delegate HResult PrjGetDirectoryEnumeration(
+            PrjCallbackDataUnmanaged* callbackData,
+            Guid* enumerationId,
+            ushort* searchExpression,
+            PrjDirEntryBufferHandle dirEntryBufferHandle
+        );
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        internal delegate HResult PrjEndDirectoryEnumeration(
+            PrjCallbackDataUnmanaged* callbackData,
+            Guid* enumerationId
+        );
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        internal delegate HResult PrjGetPlaceholderInfo(
+            PrjCallbackDataUnmanaged* callbackData
+        );
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        internal delegate HResult PrjGetFileData(
+            PrjCallbackDataUnmanaged* callbackData,
+            ulong byteOffset,
+            uint length
+        );
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        internal delegate HResult PrjQueryFileName(
+            PrjCallbackDataUnmanaged* callbackData
+        );
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        internal delegate HResult PrjNotification(
+            PrjCallbackDataUnmanaged* callbackData,
+            byte isDirectory,
+            ProjectedFSLib.PrjNotification notification,
+            ushort* destinationFileName,
+            PrjNotificationParameters* notificationParameters
+        );
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        internal delegate void PrjCancelCommand(
+            PrjCallbackDataUnmanaged* callbackData
+        );
+    }
+
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     internal delegate HResult PrjStartDirectoryEnumeration(
         in PrjCallbackData callbackData,

@@ -38,6 +38,7 @@ internal static partial class Api
         virtualizationInstanceHandle = default;
         VirtualizationInstExtendedParametersUnmanaged __extendedParameters_native = default;
         VirtualizationInstExtendedParametersUnmanaged* extendedParametersPtr = null;
+        PrjCommandCallbacksUnmanaged __callbacks_native = default;
         HResult __retVal = default;
         try
         {
@@ -46,12 +47,12 @@ internal static partial class Api
                 __extendedParameters_native = VirtualizationInstExtendedParametersMarshaller.ConvertToUnmanaged(extendedParameters.Value);
                 extendedParametersPtr = &__extendedParameters_native;
             }
+            __callbacks_native = PrjCommandCallbacksMarshaller.ConvertToUnmanaged(in callbacks);
             // Pin - Pin data in preparation for calling the P/Invoke.
             fixed (nint* __virtualizationInstanceHandle_native = &virtualizationInstanceHandle)
-            fixed (PrjCommandCallbacks* __callbacks_native = &callbacks)
             fixed (void* __virtualizationRootPath_native = &Utf16StringMarshaller.GetPinnableReference(virtualizationRootPath))
             {
-                __retVal = __PInvoke((ushort*)__virtualizationRootPath_native, __callbacks_native, instanceContext, &__extendedParameters_native, __virtualizationInstanceHandle_native);
+                __retVal = __PInvoke((ushort*)__virtualizationRootPath_native, &__callbacks_native, instanceContext, &__extendedParameters_native, __virtualizationInstanceHandle_native);
             }
         }
         finally
@@ -63,7 +64,7 @@ internal static partial class Api
         return __retVal;
         // Local P/Invoke
         [DllImport("ProjectedFSLib.dll", EntryPoint = "PrjStartVirtualizationInstanceEx", ExactSpelling = true)]
-        static extern unsafe HResult __PInvoke(ushort* __virtualizationRootPath_native, PrjCommandCallbacks* __callbacks_native, nint __instanceContext_native, VirtualizationInstExtendedParametersUnmanaged* __extendedParameters_native, nint* __virtualizationInstanceHandle_native);
+        static extern unsafe HResult __PInvoke(ushort* __virtualizationRootPath_native, PrjCommandCallbacksUnmanaged* __callbacks_native, nint __instanceContext_native, VirtualizationInstExtendedParametersUnmanaged* __extendedParameters_native, nint* __virtualizationInstanceHandle_native);
     }
 
     [Obsolete("use PrjStopVirtualizing instead of PrjStopVirtualizationInstance")]

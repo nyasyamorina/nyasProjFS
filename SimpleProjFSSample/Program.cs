@@ -26,20 +26,6 @@ public static partial class Program
 
     private static void MainEntry(CommandLineOptions opts)
     {
-#if DEBUG
-        opts.SourceRoot = "TestCanReadSymlinkDirsThroughVirtualizationRoot_source";
-        opts.VirtRoot   = "TestCanReadSymlinkDirsThroughVirtualizationRoot_virtRoot";
-        opts.SourceRoot = Path.Combine(AppContext.BaseDirectory, opts.SourceRoot);
-        opts.VirtRoot   = Path.Combine(AppContext.BaseDirectory, opts.VirtRoot  );
-        opts.TestMode = true;
-
-        if (Directory.Exists(opts.VirtRoot)) {
-            Directory.Delete(opts.VirtRoot);
-        }
-#else
-        Console.WriteLine($"Cammand Line: `{Environment.CommandLine}`");
-#endif
-
         Logger.Level fileLoggingLevel = opts.Debug ? Logger.Level.Debug : Logger.Level.Info;
         Logger.Initialize(fileLoggingLevel, consoleLoggingLevel: Logger.Level.Error);
         Logger.Info("start");
