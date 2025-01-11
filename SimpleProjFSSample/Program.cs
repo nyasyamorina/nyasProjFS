@@ -2,43 +2,36 @@
 using CommandLine;
 using SimpleProjFSSample;
 
-CommandLine.Parser.Default.ParseArguments<CommandLineOptions>(args).WithParsed(MainEntry);
-return s_exitCode;
-
-
-public static partial class Program
+static class Program
 {
     private static int s_exitCode = 0;
 
-    private static int? s_buildNumber;
-    public static int BuildNumber => s_buildNumber ??= GetWindowsBuildNumber();
-
-    private static int GetWindowsBuildNumber()
+    public static int Main(string[] args)
     {
-        int build = Convert.ToInt32(Microsoft.Win32.Registry.GetValue(
-            @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion",
-            "CurrentBuild",
-            0
-        ));
-        Logger.Info($"windows build number: {build}");
-        return build;
+        CommandLine.Parser.Default.ParseArguments<CommandLineOptions>(args).WithParsed(MainEntry);
+        return s_exitCode;
     }
 
     private static void MainEntry(CommandLineOptions opts)
     {
         Logger.Level fileLoggingLevel = opts.Debug ? Logger.Level.Debug : Logger.Level.Info;
-        Logger.Initialize(fileLoggingLevel, consoleLoggingLevel: Logger.Level.Error);
+        Logger.Initialize(consoleLoggingLevel: Logger.Level.Warn, opts);
         Logger.Info("start");
 
+        SimpleProvider? provider = null;
         try {
-            if (CheckAndEnableProjFS() && InitializeProjFSApi()) {
-                RunSimpleProvider(opts);
+            if (EnvironmentHelper.CheckAndEnableProjFS() && InitializeProjFSApi()) {
+                provider = SimpleProvider.Run(opts);
+                if (provider is null) { s_exitCode = 1; }
+                else { Console.WriteLine("Provider is running."); }
             }
 
             Console.WriteLine();
             Console.WriteLine();
             Console.Write("Press [Enter] to exit...");
             Console.ReadLine();
+
+            provider?.StopVirtualization();
             Logger.Info($"exit {s_exitCode}");
         }
         catch (Exception ex) {
@@ -48,58 +41,6 @@ public static partial class Program
         finally {
             Logger.Dispose();
         }
-    }
-
-    private static bool CheckAndEnableProjFS()
-    {
-        string? line;
-        if (ProjFSFeatureController.CheckProjFSEnabled()) {
-            Console.WriteLine("The ProjFS feature is enabled.");
-            return true;
-        }
-        else if (BuildNumber < nyasProjFS.BuildNumbers.Minimal) {
-            Console.WriteLine("The ProjFS feature is available on windows 10 version 1803 and above, please upgrade your windows.");
-            return false;
-        }
-
-        // using ProjFSFeatureController.exe to enable feature should be a optional Functionality
-        if (!File.Exists(ProjFSFeatureController.ExePath)) {
-            Logger.Info("could not find ProjFSFeatureController.exe");
-            goto ReturnFalse;
-        }
-
-        Console.WriteLine("The ProjFS feature is not enabled, Do you want to enable ProjFS now? (administrator required) [y/n, default:n]");
-        line = Console.ReadLine();
-        Logger.Debug($"user input: {line}");
-
-        if (line is not null && char.ToLower(line[0]) == 'y') {
-            try {
-                ProjFSFeatureController.Exe(enableFeature: true);
-
-                if (ProjFSFeatureController.CheckProjFSEnabled()) {
-                    Console.WriteLine("The ProjFS feature has been successfully enabled.");
-                    return true;
-                }
-                else {
-                    Console.WriteLine("Failed to enable the ProjFS feature.");
-                    goto ReturnFalse;
-                }
-            }
-            catch (NotSupportedException ex) {
-                Logger.Error(" -- " + ex.Message);
-                goto ReturnFalse;
-            }
-            catch (Win32Exception ex) when (ex.NativeErrorCode == 1223) {
-                Logger.Info(" -- running ProjFSFeatureController.exe was canceled by the user");
-            }
-        }
-        Console.WriteLine("This program need ProjFS to run.");
-
-        ReturnFalse:
-        Console.WriteLine();
-        Console.WriteLine("You can manually enter `Enable-WindowsOptionalFeature -Online -FeatureName Client-ProjFS -NoRestart` in Windows PowerShell to enable ProjFS.");
-        Console.WriteLine("If ProjFS is already enabled and you still see this message, please contact the author on github.");
-        return false;
     }
 
     private static bool InitializeProjFSApi()
@@ -116,30 +57,9 @@ public static partial class Program
         catch (BadImageFormatException ex) {
             Logger.Error($" -- could not load dll: \n{ex.Message}");
         }
-        catch (EntryPointNotFoundException ex) {
-            Logger.Error($" -- could not find entry point: \n{ex.Message}");
+        catch (EntryPointNotFoundException) {
+            Logger.Error($" -- could not find ProjFS entry point");
         }
         return false;
-    }
-
-    private static void RunSimpleProvider(CommandLineOptions opts)
-    {
-        SimpleProvider provider;
-        try {
-            provider = new(opts);
-        }
-        catch (Exception) {
-            Logger.Fatal("Failed to create SimpleProvider.");
-            throw;
-        }
-
-        Logger.Info("Starting provider");
-
-        if (!provider.StartVirtualization()) {
-            Logger.Error("Could not start provider.");
-            s_exitCode = 1;
-            return;
-        }
-        Console.WriteLine("Provider is running.");
     }
 }

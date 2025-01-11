@@ -14,6 +14,12 @@ public sealed class CommandLineOptions
     [Option(Required = true, HelpText = "Path to the virtualization root.")]
     public string VirtRoot { get; set; } = "";
 
+    [Option(HelpText = "Set the path of log output file.")]
+    public string? LogPath { get; set; }
+
+    [Option(HelpText = "Set the log level of log output file")]
+    public string? LogLevel { get; set; }
+
     [Option('t', "testmode", HelpText = "Use this when running the provider with the test package.", Hidden = true)]
     public bool TestMode { get; set; } = false;
 

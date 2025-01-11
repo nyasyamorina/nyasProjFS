@@ -7,9 +7,7 @@
     <Nullable>enable</Nullable>
     <OutputType>Exe</OutputType>
     <StartupObject>SimpleProjFSSample.Test.Program</StartupObject>
-    <BaseOutputPath>..\BuildOutput</BaseOutputPath>
-	  <!-- <UseCommonOutputDirectory>true</UseCommonOutputDirectory> -->
-    <SelfContained>false</SelfContained>
+    <IsPublishable>false</IsPublishable>
   </PropertyGroup>
 
   <ItemGroup>

@@ -9,7 +9,6 @@ class Helpers
     public int WaitTimeoutInMs { get; set; }
     public List<EventWaitHandle> NotificationEvents { get; private set; }
 
-
     internal enum NotifyWaitHandleNames {
         FileOpened,
         NewFileCreated,
@@ -44,6 +43,9 @@ class Helpers
     {
         GetRootNamesForTest(out sourceRoot, out virtRoot);
 
+        string tmp = $"{TestContext.CurrentContext.Test.MethodName}+{TestContext.CurrentContext.Test.ID}";
+        Logger.Info($"[Test] {tmp}");
+
         // Get the provider name from the command line.
         var providerExe = TestContext.Parameters.Get("ProviderExe") ?? Path.Combine(AppContext.BaseDirectory, "SimpleProjFSSample.exe");
 
@@ -56,9 +58,10 @@ class Helpers
 
         string sourceArg = " --sourceroot " + sourceRoot;
         string virtRootArg = " --virtroot " + virtRoot;
+        string logOpts = $" --logpath {Path.Join("Log", $"{tmp}.log")} --loglevel Debug";
 
         // Add all the arguments, as well as the "test mode" argument.
-        ProviderProcess.StartInfo.Arguments = sourceArg + virtRootArg + " -t";
+        ProviderProcess.StartInfo.Arguments = sourceArg + virtRootArg + logOpts + " -t";
         ProviderProcess.StartInfo.UseShellExecute = true;
 
         ProviderProcess.Start();
@@ -72,6 +75,7 @@ class Helpers
     public void StopTestProvider()
     {
         ProviderProcess?.CloseMainWindow();
+        Logger.Info($"[~Test] {TestContext.CurrentContext.Test.MethodName}");
     }
 
     // Makes name strings for the source and virtualization roots for a test, using the NUnit

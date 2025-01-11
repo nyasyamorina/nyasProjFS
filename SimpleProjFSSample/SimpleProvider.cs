@@ -9,6 +9,30 @@ namespace SimpleProjFSSample;
 /// </summary>
 public class SimpleProvider
 {
+    public static SimpleProvider? Run(CommandLineOptions opts)
+    {
+        Logger.Info("Creating provider...");
+
+        SimpleProvider provider;
+        try {
+            provider = new(opts);
+        }
+        catch (Exception) {
+            Logger.Fatal("Failed to create SimpleProvider.");
+            throw;
+        }
+
+        Logger.Info("Starting provider...");
+
+        if (!provider.StartVirtualization()) {
+            Logger.Error("Could not start provider.");
+            return null;
+        }
+
+        Logger.Info("Success");
+        return provider;
+    }
+
     // These variables hold the layer and scratch paths.
     private readonly string scratchRoot;
     private readonly string layerRoot;
@@ -17,8 +41,6 @@ public class SimpleProvider
     private readonly ConcurrentDictionary<Guid, ActiveEnumeration> activeEnumerations;
 
     private NotificationCallbacks notificationCallbacks;
-
-    private bool isSymlinkSupportAvailable;
 
     public CommandLineOptions Options { get; }
 
@@ -81,13 +103,11 @@ public class SimpleProvider
 
         Logger.Info($"Created instance. Layer [{layerRoot}], Scratch [{scratchRoot}]");
 
-        if (this.Options.TestMode)
-        {
-            Logger.Info("Provider started in TEST MODE.");
+        if (this.Options.TestMode) {
+            Logger.Info("Provider set in TEST MODE.");
         }
 
         this.activeEnumerations = new ConcurrentDictionary<Guid, ActiveEnumeration>();
-        this.isSymlinkSupportAvailable = Program.BuildNumber >= 19041;
     }
 
     public bool StartVirtualization()
@@ -111,6 +131,11 @@ public class SimpleProvider
         }
 
         return true;
+    }
+
+    public void StopVirtualization()
+    {
+        this.virtualizationInstance.StopVirtualizing();
     }
 
     private static bool IsEnumerationFilterSet(string filter)
@@ -360,7 +385,7 @@ public class SimpleProvider
 
     private bool AddFileInfoToEnum(IDirectoryEnumerationResults enumResult, ProjectedFileInfo fileInfo, string? targetPath)
     {
-        if (this.isSymlinkSupportAvailable) {
+        if (EnvironmentHelper.IsSymlinkSupportAvailable) {
             return enumResult.Add(
                 fileName: fileInfo.Name,
                 fileSize: fileInfo.Size,
@@ -427,7 +452,7 @@ public class SimpleProvider
 
     private HResult WritePlaceholderInfo(string relativePath, ProjectedFileInfo fileInfo, string? targetPath)
     {
-        if (this.isSymlinkSupportAvailable) {
+        if (EnvironmentHelper.IsSymlinkSupportAvailable) {
             return this.virtualizationInstance.WritePlaceholderInfo2(
                 relativePath: Path.Combine(Path.GetDirectoryName(relativePath) ?? "", fileInfo.Name),
                 creationTime: fileInfo.CreationTime,

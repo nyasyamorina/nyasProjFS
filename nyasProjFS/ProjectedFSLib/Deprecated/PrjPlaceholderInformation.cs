@@ -44,7 +44,7 @@ internal static class PrjPlaceholderInformationMarshaller
         unmanaged.SecurityInformation = managed.SecurityInformation;
         unmanaged.StreamsInformation = managed.StreamsInformation;
         unmanaged.VersionInfo = versionInfo;
-        fixed (byte* variableData = managed.VariableData) if (variableData != null) {
+        if (managed.VariableData is not null) fixed (byte* variableData = managed.VariableData) {
             unmanaged.VariableData[0] = variableData[0];
         }
         return unmanaged;

@@ -1,5 +1,14 @@
 # Visual Studio 2015/2017 cache/options directory
 .vs/
 
+# vscode settings
+.vscode/
+
 # common build output
 BuildOutput/
+
+# common publish output
+PublishOutput/
+
+# application running directory
+playground/

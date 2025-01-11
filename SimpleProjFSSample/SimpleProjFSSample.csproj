@@ -7,9 +7,6 @@
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <OutputType>Exe</OutputType>
-    <BaseOutputPath>..\BuildOutput</BaseOutputPath>
-	  <!-- <UseCommonOutputDirectory>true</UseCommonOutputDirectory> -->
-    <SelfContained>false</SelfContained>
   </PropertyGroup>
 
   <ItemGroup>

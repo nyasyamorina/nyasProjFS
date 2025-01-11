@@ -6,10 +6,10 @@ namespace nyasProjFS.ProjectedFSLib.Deprecated;
 [NativeMarshalling(typeof(VirtualizationInstExtendedParametersMarshaller))]
 internal struct VirtualizationInstExtendedParameters
 {
-    internal uint Flags { get; set; }
-    internal uint PoolThreadCount { get; set; }
-    internal uint ConcurrentThreadCount { get; set; }
-    internal PrjNotificationMapping[] NotificationMappings { get; set; }
+    internal uint Flags;
+    internal uint PoolThreadCount;
+    internal uint ConcurrentThreadCount;
+    internal PrjNotificationMapping[] NotificationMappings;
 }
 
 // ?? `MarshalAs` is not working with `LibraryImport` ??
@@ -30,8 +30,11 @@ internal static class VirtualizationInstExtendedParametersMarshaller
     internal static unsafe VirtualizationInstExtendedParametersUnmanaged ConvertToUnmanaged(in VirtualizationInstExtendedParameters managed)
     {
         PrjNotificationMappingUnmanaged* mappings = null;
-        if (managed.NotificationMappings.Length > 0) {
-            nuint totalBytes = (nuint) managed.NotificationMappings.Length * (nuint) Marshal.SizeOf<PrjNotificationMappingUnmanaged>();
+        uint mappingsCount = 0;
+        if (managed.NotificationMappings is not null && managed.NotificationMappings.Length > 0) {
+            mappingsCount = (uint) managed.NotificationMappings.Length;
+
+            nuint totalBytes = mappingsCount * (nuint) Marshal.SizeOf<PrjNotificationMappingUnmanaged>();
             mappings = (PrjNotificationMappingUnmanaged*) NativeMemory.Alloc(totalBytes);
 
             uint index = 0;
@@ -47,7 +50,7 @@ internal static class VirtualizationInstExtendedParametersMarshaller
         unmanaged.PoolThreadCount = managed.PoolThreadCount;
         unmanaged.ConcurrentThreadCount = managed.ConcurrentThreadCount;
         unmanaged.NotificationMappings = mappings;
-        unmanaged.NumNotificationMappingsCount = (uint) managed.NotificationMappings.Length;
+        unmanaged.NumNotificationMappingsCount = mappingsCount;
         return unmanaged;
     }
 

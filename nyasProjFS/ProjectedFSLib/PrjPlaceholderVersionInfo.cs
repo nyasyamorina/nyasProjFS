@@ -24,17 +24,13 @@ internal static class PrjPlaceholderVersionInfoMarshaller
     internal static unsafe PrjPlaceholderVersionInfoUnmanaged ConvertToUnmanaged(in PrjPlaceholderVersionInfo managed)
     {
         PrjPlaceholderVersionInfoUnmanaged unmanaged = default;
-        fixed (byte* src = managed.ProviderId) {
-            if (src != null) {
-                nuint copyLength = nuint.Min(PrjPlaceholderId.Length, (nuint) managed.ProviderId.Length);
-                NativeMemory.Copy(src, unmanaged.ProviderId, copyLength);
-            }
+        if (managed.ProviderId is not null) fixed (byte* src = managed.ProviderId) {
+            nuint copyLength = nuint.Min(PrjPlaceholderId.Length, (nuint) managed.ProviderId.Length);
+            NativeMemory.Copy(src, unmanaged.ProviderId, copyLength);
         }
-        fixed (byte* src = managed.ContentId) {
-            if (src != null) {
-                nuint copyLength = nuint.Min(PrjPlaceholderId.Length, (nuint) managed.ContentId.Length);
-                NativeMemory.Copy(src, unmanaged.ContentId, copyLength);
-            }
+        if (managed.ContentId is not null) fixed (byte* src = managed.ContentId) {
+            nuint copyLength = nuint.Min(PrjPlaceholderId.Length, (nuint) managed.ContentId.Length);
+            NativeMemory.Copy(src, unmanaged.ContentId, copyLength);
         }
         return unmanaged;
     }

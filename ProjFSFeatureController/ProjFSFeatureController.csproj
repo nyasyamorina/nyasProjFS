@@ -6,9 +6,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <OutputType>Exe</OutputType>
-    <BaseOutputPath>..\BuildOutput</BaseOutputPath>
-	  <!-- <UseCommonOutputDirectory>true</UseCommonOutputDirectory> -->
-    <SelfContained>false</SelfContained>
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
 

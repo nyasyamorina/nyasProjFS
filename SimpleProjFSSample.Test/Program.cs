@@ -4,25 +4,23 @@ namespace SimpleProjFSSample.Test;
 
 class Program
 {
-    private static int? s_buildNumber;
-    public static int BuildNumber => s_buildNumber ??= GetWindowsBuildNumber();
-
-    private static int GetWindowsBuildNumber()
-    {
-        int build = Convert.ToInt32(Microsoft.Win32.Registry.GetValue(
-            @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion",
-            "CurrentBuild",
-            0
-        ));
-        return build;
-    }
-
     public static void Main(string[] args)
     {
+        if (Directory.Exists("Log")) { Directory.Delete("Log", true); }
+        CommandLineOptions opts = new() {
+            LogPath = Path.Join("Log", "SimpleProjFSSample.Test.log"),
+            LogLevel = "Debug",
+        };
+        Logger.Initialize(Logger.Level.Fatal, opts);
+
+        if (!EnvironmentHelper.CheckAndEnableProjFS()) {
+            throw new InvalidOperationException("ProjFS is not enabled.");
+        }
+
         NUnitRunner runner = new(args);
         List<string> excludeCategories = [];
 
-        if (BuildNumber < 19041) {
+        if (!EnvironmentHelper.IsSymlinkSupportAvailable) {
             excludeCategories.Add(BasicTests.SymlinkTestCategory);
         }
 

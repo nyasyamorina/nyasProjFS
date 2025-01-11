@@ -29,8 +29,11 @@ internal static class PrjStartVirtualizingOptionsMarsheller
     internal static unsafe PrjStartVirtualizingOptionsUnmanaged ConvertToUnmanaged(in PrjStartVirtualizingOptions managed)
     {
         PrjNotificationMappingUnmanaged* mappings = null;
-        if (managed.NotificationMappings.Length > 0) {
-            nuint totalBytes = (nuint) managed.NotificationMappings.Length * (nuint) Marshal.SizeOf<PrjStartVirtualizingOptionsUnmanaged>();
+        uint mappingsCount = 0;
+        if (managed.NotificationMappings is not null && managed.NotificationMappings.Length > 0) {
+            mappingsCount = (uint) managed.NotificationMappings.Length;
+
+            nuint totalBytes = mappingsCount * (nuint) Marshal.SizeOf<PrjStartVirtualizingOptionsUnmanaged>();
             mappings = (PrjNotificationMappingUnmanaged*) NativeMemory.Alloc(totalBytes);
 
             uint index = 0;
@@ -44,7 +47,7 @@ internal static class PrjStartVirtualizingOptionsMarsheller
         unmanaged.PoolThreadCount = managed.PoolThreadCount;
         unmanaged.ConcurrentThreadCount = managed.ConcurrentThreadCount;
         unmanaged.NotificationMappings = mappings;
-        unmanaged.NotificationMappingsCount = (uint) managed.NotificationMappings.Length;
+        unmanaged.NotificationMappingsCount = mappingsCount;
         return unmanaged;
     }
 
